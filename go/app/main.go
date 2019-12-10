@@ -90,8 +90,26 @@ func getUsersByID(w http.ResponseWriter, r *http.Request) {
 	w.Write(rows)
 }
 
+func getTotalUsersDB() int {
+	var count int
+	db := openConnDB()
+	row := db.QueryRow("select count(user_id) from users")
+	err := row.Scan(&count)
+	if err != nil {
+		log.Fatal(err)
+	}
+	closeConnDB(db)
+	return count
+}
+
 //Função para inserir na tabela, este recebe uma estrutura completa e só junta à query
 func insertUser(user User) bool {
+	next_id := getTotalUsersDB() + 1
+	if next_id == 0 {
+		next_id = 1
+	}
+	user.User_id = next_id
+	//next_id_str := strconv.Itoa(next_id)
 	db := openConnDB()
 	tx := db.MustBegin()
 	tx.NamedExec("INSERT INTO users (user_id, user_name, email, password) VALUES (:user_id, :user_name, :email, :password)", &user)
