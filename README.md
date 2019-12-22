@@ -26,7 +26,8 @@ React Native
 
 4.4) To edit .bash_profile run: sudo nano ~/.bash_profile or sudo gedit ~/.bash_profile, if you have and prefer using gedit
 
-4.5) Copy and paste: 
+4.5) Copy and paste: use the ones in https://facebook.github.io/react-native/docs/getting-started
+  
   export ANDROID_HOME=$HOME/Android/Sdk
   export PATH=$PATH:$ANDROID_HOME/emulator
   export PATH=$PATH:$ANDROID_HOME/tools
@@ -38,13 +39,22 @@ React Native
 
 4.6.1) Follow: https://facebook.github.io/watchman/docs/install.html#buildinstall
 
-4.6.2) $ # use the latest stable release
+4.6.2) Beware of the format in these steps
+
+       $ # use the latest stable release
+       
        $ git clone https://github.com/facebook/watchman.git -b v4.9.0 --depth 1
+       
        $ cd watchman 
+       
        $ ./autogen.sh
+       
        $ ./configure
+       
        $ make
+       
        $ sudo make install
+       
        $ watchman --version, to check version
        
 5) Finally to run the app:
