@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
@@ -147,11 +149,22 @@ func deleteUser(id string) bool {
 func checkUser(user_name string, pass string) bool {
 	var u User
 	db := openConnDB()
-	err := db.Get(&u, "SELECT user_name, password FROM users WHERE user_name like "+"'"+user_name+"'")
+	err := db.Get(&u, "SELECT user_name, password FROM users WHERE user_name = "+"'"+user_name+"'")
 	if err != nil {
 		return false
 	}
-	if u.Password != pass {
+	// Comparing the password with the hash
+	//var aux string = u.Password
+	hashedPassword := []byte(u.Password)
+	/*log.Fatal("hashedPassword: ")
+	log.Fatal(hashedPassword)*/
+	password := []byte(pass)
+	/*log.Fatal("password: ")
+	log.Fatal(password)*/
+	e := bcrypt.CompareHashAndPassword(hashedPassword, password)
+	/*log.Fatal("Bycript: ")
+	log.Fatal(e)  // nil means it is a match*/
+	if e != nil { //u.Password != pass {
 		return false
 	}
 	closeConnDB(db)
@@ -515,8 +528,33 @@ func login(w http.ResponseWriter, r *http.Request) {
 	var user User
 	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	json.NewDecoder(r.Body).Decode(&user)
-	result := checkUser(user.User_name, user.Password)
-	j, _ := json.Marshal(result)
+	//result := checkUser(user.User_name, user.Password)
+
+	var u User
+	var b bool
+	db := openConnDB()
+	err := db.Get(&u, "SELECT user_name, password FROM users WHERE user_name = "+"'"+user.User_name+"'")
+	if err != nil {
+		b = false
+	}
+	// Comparing the password with the hash
+	//var aux string = u.Password
+	//hashedPassword := []byte(u.Password)
+	fmt.Println("hashedPassword: ")
+	fmt.Println(u.Password) //hashedPassword
+	//password := []byte(user.Password)
+	fmt.Println("password: ")
+	fmt.Println(user.Password) //password
+	/*e := bcrypt.CompareHashAndPassword(hashedPassword, password)
+	fmt.Println("Bycript: ")
+	fmt.Println(e) // nil means it is a match
+	if e != nil {  //u.Password != pass {
+		b = false
+	}
+	closeConnDB(db)
+	b = true*/
+
+	j, _ := json.Marshal(b) //result
 	w.WriteHeader(http.StatusOK)
 	w.Write(j)
 }
@@ -748,6 +786,31 @@ func getRecipeIngredientsByRecipeRoute(w http.ResponseWriter, r *http.Request) {
 	w.Write(rows)
 }
 
+/**
+* test
+ */
+func test() []byte {
+	/*row := []User{}
+	db := openConnDB()
+	err := db.Select(&row, "SELECT * FROM users WHERE user_id ="+id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	j, _ := json.Marshal(row)
+	closeConnDB(db)
+	return j*/
+	ola := []byte("ola mundo")
+	return ola
+}
+
+func testRoute(w http.ResponseWriter, r *http.Request) {
+	rows := test()
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(rows)
+}
+
 func main() {
 	//Init router
 	r := mux.NewRouter() // := atribui tipo á variavel
@@ -789,6 +852,9 @@ func main() {
 	r.HandleFunc("/api/editRecipeIngredients", editRecipeIngredientsRoute).Methods("POST")
 	r.HandleFunc("/api/searchRecipeIngredientsName/name/{name}", getRecipeIngredientsByIngredientRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeRecipesName/name/{name}", getRecipeIngredientsByRecipeRoute).Methods("GET")
+
+	//test route
+	r.HandleFunc("/api/test/test/", testRoute).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8000", handlers.CORS(corsObj, headersOk, methodsOk)(r))) // se falhar dá erro !*/
 }

@@ -28,23 +28,10 @@ services:
       - 'recipes'
     volumes:
       - './go/app:/go/src/github.com/app/restapi'
-    #environment:
-    #  - DEBUG = true
+    environment:
+      - DEBUG = true
     links:
       - postgres
-  react:
-    build:
-      context: '.'
-      dockerfile: './react/Dockerfile'
-    depends_on:
-      - 'go'
-      - 'postgres'
-    ports:
-      - '3000:3000'
-    networks:
-      - 'recipes'
-    volumes:
-      - './react/react-app/:/home/react/react-app'
 volumes:
   postgresData: {}
 
