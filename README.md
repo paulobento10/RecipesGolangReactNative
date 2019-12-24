@@ -10,7 +10,7 @@ Docker(Database + API)
 
 2) docker-compose down --rmi all --volume, beware, this command deletes all docker containers, volumes, everything related to docker;
 
-3) Run: docke-compose up --build, the --build only the first time;
+3) Run: docker-compose up --build, the --build only the first time;
 
 React Native
 
