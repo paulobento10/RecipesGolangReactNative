@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"strings"
 
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
@@ -149,22 +147,23 @@ func deleteUser(id string) bool {
 func checkUser(user_name string, pass string) bool {
 	var u User
 	db := openConnDB()
-	err := db.Get(&u, "SELECT user_name, password FROM users WHERE user_name = "+"'"+user_name+"'")
+	err := db.Get(&u, "SELECT user_name, password FROM users WHERE user_name like "+"'"+user_name+"'")
 	if err != nil {
 		return false
 	}
 	// Comparing the password with the hash
 	//var aux string = u.Password
-	hashedPassword := []byte(u.Password)
+	//hashedPassword := []byte(u.Password)
 	/*log.Fatal("hashedPassword: ")
 	log.Fatal(hashedPassword)*/
-	password := []byte(pass)
+	//password := []byte(pass)
 	/*log.Fatal("password: ")
 	log.Fatal(password)*/
-	e := bcrypt.CompareHashAndPassword(hashedPassword, password)
+	//e := bcrypt.CompareHashAndPassword(hashedPassword, password)
 	/*log.Fatal("Bycript: ")
 	log.Fatal(e)  // nil means it is a match*/
-	if e != nil { //u.Password != pass {
+	//if e != nil { //u.Password != pass {
+	if u.Password != pass {
 		return false
 	}
 	closeConnDB(db)
@@ -528,9 +527,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 	var user User
 	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	json.NewDecoder(r.Body).Decode(&user)
-	//result := checkUser(user.User_name, user.Password)
+	result := checkUser(user.User_name, user.Password)
 
-	var u User
+	/*var u User
 	var b bool
 	db := openConnDB()
 	err := db.Get(&u, "SELECT user_name, password FROM users WHERE user_name = "+"'"+user.User_name+"'")
@@ -554,7 +553,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	closeConnDB(db)
 	b = true*/
 
-	j, _ := json.Marshal(b) //result
+	j, _ := json.Marshal(result) //b
 	w.WriteHeader(http.StatusOK)
 	w.Write(j)
 }
