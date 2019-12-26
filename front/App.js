@@ -7,6 +7,7 @@
  */
 
 import React from 'react';
+import { useState, /*useCallback,*/ useEffect } from 'react';
 import axios from 'axios';
 import {
   SafeAreaView,
@@ -25,26 +26,31 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-var str; //="123";
 const App: () => React$Node = () => {
-  function test(){
-    axios.get('http://192.168.1.68:8000/api/searchUser/id/1') //http://jsonplaceholder.typicode.com/todos/1
+  const [user, setUser] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  useEffect(() => {                 //aqui iremos preencher o array das receitas (default) logo após o render (get de allrecipes)
+    axios.get('http://192.168.1.119:8000/api/searchUser/id/1') //http://jsonplaceholder.typicode.com/todos/1
+    //axios.get('http://192.168.1.68:8000/api/searchUser/id/1') //http://jsonplaceholder.typicode.com/todos/1
     .then(function (response) {
       console.log(response.data);
-      str = response.data[0].email;
-      //str="ola"
-      console.log(str)
+      setUser(response.data[0].user_name);
+      setEmail(response.data[0].email);
+      setPassword(response.data[0].password);
     })
     .catch(function (error) {
       console.log(error);
     });
-  }
-  test();
-  //var stuff=str.email;
+  }, []);
+
 
   return (
     <>
-        <Text>{str}</Text>
+    <Text>User: {user}</Text>
+    <Text>Email: {email}</Text>
+    <Text>Password: {password}</Text>
     </> 
   );
 };
