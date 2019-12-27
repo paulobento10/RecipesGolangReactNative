@@ -15,13 +15,12 @@ const SignIn: () => React$Node = () => {
       password: password.text,
     }
     
-    axios.post("http://192.168.1.68:8000/api/login", user)
-    .then(result => {  
-      console.log('RESULTADO: '+{result});
-      console.log(user);
+    //axios.post("http://192.168.1.68:8000/api/login", user)
+    axios.post("http://192.168.1.119:8000/api/login", user)
+    .then(result => {
+      console.log(result.data);
       if (result.data==true) {
-        console.log('true');
-        //Actions.show();
+        Actions.show();
       } else {
         console.log(result.data);
         setIsError(true);
