@@ -142,12 +142,12 @@ func deleteUser(id string) bool {
 }
 
 /**
-* [Model][User] Returns a bool, it verifies if the user_name and password received from parameters are the same as the ones in the database
+* [Model][User] Returns a bool, it verifies if the email and password received from parameters are the same as the ones in the database
  */
-func checkUser(user_name string, pass string) bool {
+func checkUser(email string, pass string) bool {
 	var u User
 	db := openConnDB()
-	err := db.Get(&u, "SELECT user_name, password FROM users WHERE user_name like "+"'"+user_name+"'")
+	err := db.Get(&u, "SELECT email, password FROM users WHERE email like "+"'"+email+"'")
 	if err != nil {
 		return false
 	}
@@ -527,7 +527,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	var user User
 	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	json.NewDecoder(r.Body).Decode(&user)
-	result := checkUser(user.User_name, user.Password)
+	result := checkUser(user.Email, user.Password)
 
 	/*var u User
 	var b bool

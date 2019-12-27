@@ -11,16 +11,19 @@ const SignIn: () => React$Node = () => {
 
   const post = () => {
     var user = {
-      email: email,
-      password: password,
+      email: email.text,
+      password: password.text,
     }
     
-    axios.post("http://localhost:8000/api/login", user)
+    axios.post("http://192.168.1.68:8000/api/login", user)
     .then(result => {  
       console.log('RESULTADO: '+{result});
+      console.log(user);
       if (result.data==true) {
-        Actions.show();
+        console.log('true');
+        //Actions.show();
       } else {
+        console.log(result.data);
         setIsError(true);
       }
     }).catch(e => {
