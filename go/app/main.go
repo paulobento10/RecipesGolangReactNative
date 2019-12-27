@@ -810,6 +810,40 @@ func testRoute(w http.ResponseWriter, r *http.Request) {
 	w.Write(rows)
 }
 
+/**
+* Pesquisar uma receita por ingredientes
+
+func getRecipeByIngredients(names []string) []byte {
+	row := []RecipeIngredients{}
+	db := openConnDB()
+
+	recipe_id := "not"
+	valid_recipe := true
+	s := len(names)
+	//for i, s := range names {
+	for i := 1; i < s; i++ {
+		err := db.Select(&row, "SELECT * FROM recipeingredients WHERE recipeingredients_id IN (select ingredients_id from ingredients where ingredients_name = "+"'"+names[i]+"')")
+		if err != nil {
+			valid_recipe = false
+			log.Fatal(err)
+		}
+		recipe_id = row.recipe_id
+	}
+
+	recipe := []Recipes{}
+	if valid_recipe == true {
+		err := db.Select(&row, "SELECT * FROM recipes WHERE recipe_id ="+recipe_id)
+		if err != nil {
+			valid_recipe = false
+			log.Fatal(err)
+		}
+	}
+	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	j, _ := json.Marshal(row)
+	closeConnDB(db)
+	return j
+}*/
+
 func main() {
 	//Init router
 	r := mux.NewRouter() // := atribui tipo á variavel
