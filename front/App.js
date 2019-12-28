@@ -10,9 +10,9 @@ function App(props) {
   return (
       <Router>
         <Scene key = "root">
-          <Scene key = "signin" component = {SignIn} hideNavBar={true} initial = {true} />
+          <Scene key = "signin" component = {SignIn} hideNavBar={true}  />
           <Scene key = "signup" component = {SignUp} hideNavBar={true} />
-          <Scene key = "show" component = {Show} hideNavBar={true} />
+          <Scene key = "show" component = {Show} hideNavBar={true} initial = {true}/>
           <Scene key = "recipe" component = {Recipe} hideNavBar={true} />
           <Scene key = "insert" component = {Insert} hideNavBar={true} />
         </Scene>
