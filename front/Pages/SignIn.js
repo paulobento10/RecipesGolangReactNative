@@ -3,7 +3,7 @@ import { Container, Content, Header, Field,Left, Body, Right, Title, Form, Item,
 import { Actions } from 'react-native-router-flux';
 import axios from 'axios';
 
-const SignIn: () => React$Node = () => { 
+function SignIn(props) {
 
   const [isError, setIsError] = useState(false);
   const [email, setEmail] = useState("");
@@ -22,7 +22,6 @@ const SignIn: () => React$Node = () => {
       if (result.data==true) {
         Actions.show();
       } else {
-        console.log(result.data);
         setIsError(true);
       }
     }).catch(e => {
@@ -53,6 +52,7 @@ const SignIn: () => React$Node = () => {
             <Text>Submit</Text>
           </Button>
         </Form>
+        { isError &&<Text style={{color: '#ff0000'}}>Something went wrong, please try again.</Text> }
         <Text>{'Doesn\'t have an account? '}<Text style={{color:'#E65100'}} onPress={goToRegister}>{'Register'}</Text></Text>
       </Content>
     </Container>

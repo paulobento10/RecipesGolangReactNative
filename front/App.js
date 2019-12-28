@@ -6,7 +6,7 @@ import Show from './Pages/Show'
 import Recipe from './Pages/Recipe'
 import Insert from './Pages/Insert'
 
-const App: () => React$Node = () => { 
+function App(props) {
   return (
       <Router>
         <Scene key = "root">

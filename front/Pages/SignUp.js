@@ -3,7 +3,7 @@ import { Container, Content, Header, Field,Left, Body, Right, Title, Form, Item,
 import { Actions } from 'react-native-router-flux';
 import axios from 'axios';
 
-const SignIn: () => React$Node = () => { 
+function SignUp(props) {
   
   const [isError, setIsError] = useState(false);
   const [user_name, setUser_name] = useState("");
@@ -59,9 +59,10 @@ const SignIn: () => React$Node = () => {
           </Button>
         </Form>
         <Text>{'Already have an account? '}<Text style={{color:'#E65100'}} onPress={goToSignIn}>{'Sign In'}</Text></Text>
+        { isError &&<Text>Something went wrong, please try again.</Text> }
       </Content>
     </Container>
   );
 }
 
-export default SignIn;
+export default SignUp;
