@@ -812,36 +812,53 @@ func testRoute(w http.ResponseWriter, r *http.Request) {
 
 /**
 * Pesquisar uma receita por ingredientes
-
-func getRecipeByIngredients(names []string) []byte {
+ */
+/*func getRecipeByIngredients(names []string) []byte {
 	row := []RecipeIngredients{}
 	db := openConnDB()
 
 	recipe_id := "not"
 	valid_recipe := true
 	s := len(names)
-	//for i, s := range names {
+
+	var r []RecipeIngredients
 	for i := 1; i < s; i++ {
-		err := db.Select(&row, "SELECT * FROM recipeingredients WHERE recipeingredients_id IN (select ingredients_id from ingredients where ingredients_name = "+"'"+names[i]+"')")
+		rows, err := db.Queryx("SELECT * FROM recipeingredients WHERE recipeingredients_id IN (select ingredients_id from ingredients where ingredients_name = " + "'" + names[i] + "')")
+		for rows.Next() {
+			err = rows.StructScan(&r[i])
+		}
 		if err != nil {
 			valid_recipe = false
 			log.Fatal(err)
 		}
-		recipe_id = row.recipe_id
+		recipe_id = strconv.Itoa(r[i].Recipe_id)
 	}
 
 	recipe := []Recipes{}
 	if valid_recipe == true {
-		err := db.Select(&row, "SELECT * FROM recipes WHERE recipe_id ="+recipe_id)
+		err := db.Select(&recipe, "SELECT * FROM recipes WHERE recipe_id ="+recipe_id)
 		if err != nil {
 			valid_recipe = false
 			log.Fatal(err)
 		}
 	}
-	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	j, _ := json.Marshal(row)
 	closeConnDB(db)
 	return j
+}*/
+
+/**
+* [Controller][RecipeIngredients] function to get RecipeIngredients by id
+ */
+/*func getRecipeByIngredientsRoute(w http.ResponseWriter, r *http.Request) {
+	//vars := mux.Vars(r)
+	for k, v := range mux.Vars(r) {
+		//log.Printf("key=%v, value=%v", k, v)
+		rows := getRecipeByIngredients(k[v])
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(rows)
 }*/
 
 func main() {
