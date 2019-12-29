@@ -1,22 +1,25 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Container, Header, Content, Body } from 'native-base';
 import { Text, View } from 'react-native';
 import { Pagination} from '@ant-design/react-native';
 import { Image } from 'react-native';
 import { Card, CardItem, Thumbnail, Button, Icon, Left, Right } from 'native-base';
 import { func } from 'prop-types';
-
+import * as Scroll from 'react-scroll';
 
 
 function ShowContent(props) {
     const [minValue, setMinValue] = useState(0);
     const [maxValue, setMaxValue] = useState(5);
-    const [spacing, setSpacing] = React.useState(2);
+    const [current, setCurrent] = useState(1);
+
+    const ref = React.createRef();
 
     const handleChange = value => {
       setMinValue(((value-1)*5));
       setMaxValue(value * 5);
+      setCurrent(value);
+      scroll.scrollToTop();
     };
 
     const locale = {
@@ -30,14 +33,14 @@ function ShowContent(props) {
     }
 
     return (
-      <View style={{ paddingTop: 30 }}>
+      <View style={{ paddingTop: 30 }} >
             {props.recipes && props.recipes.length > 0 && props.recipes.slice(minValue, maxValue).map(val => (
             <Content>
               <Card>
                 <CardItem>
                   <Left>
                     <Body>
-                      <Text style={{fontWeight: 'bold'}}>Recipe Name</Text>
+                      <Text style={{fontWeight: 'bold'}}>Recipe Name {val.id}</Text>
                       <Text note>Type of recipe (breakfast/lunch/etc)</Text>
                     </Body>
                   </Left>
@@ -58,7 +61,7 @@ function ShowContent(props) {
               </Card>
             </Content>
             ))}
-            <Pagination total={Math.ceil((props.recipes.length)/maxValue)} current={1} locale={locale} onChange={handleChange}/>
+            <Pagination total={Math.ceil((props.recipes.length)/5)} current={current} locale={locale} onChange={handleChange}/>
       </View>
     );
 }
