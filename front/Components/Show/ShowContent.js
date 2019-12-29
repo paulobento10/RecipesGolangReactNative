@@ -4,8 +4,6 @@ import { Text, View } from 'react-native';
 import { Pagination} from '@ant-design/react-native';
 import { Image } from 'react-native';
 import { Card, CardItem, Thumbnail, Button, Icon, Left, Right } from 'native-base';
-import { func } from 'prop-types';
-import * as Scroll from 'react-scroll';
 
 
 function ShowContent(props) {
@@ -13,13 +11,10 @@ function ShowContent(props) {
     const [maxValue, setMaxValue] = useState(5);
     const [current, setCurrent] = useState(1);
 
-    const ref = React.createRef();
-
     const handleChange = value => {
       setMinValue(((value-1)*5));
       setMaxValue(value * 5);
       setCurrent(value);
-      scroll.scrollToTop();
     };
 
     const locale = {
