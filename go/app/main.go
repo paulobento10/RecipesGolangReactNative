@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/handlers"
@@ -26,12 +27,17 @@ type Recipes struct {
 	Recipe_id          int    `json:"recipe_id"`
 	Recipe_name        string `json:"recipe_name"`
 	Recipe_description string `json:"recipe_description"`
+	Duration           string `json:"duration"`
+	Picture            string `json:"picture"`
+	Category           string `json:"category"`
+	Kcal               string `json:"kcal"`
 	User_id            int    `json:"user_id"`
 }
 
 type Ingredients struct {
 	Ingredient_id   int    `json:"ingredient_id"`
 	Ingredient_name string `json:"ingredient_name"`
+	Kcal            string `json:"kcal"`
 }
 
 type Directions struct {
@@ -209,7 +215,7 @@ func getRecipeById(id string) []byte {
 func insertRecipe(r Recipes) bool {
 	db := openConnDB()
 	tx := db.MustBegin()
-	tx.NamedExec("INSERT INTO recipes (recipe_name, recipe_description, user_id) VALUES (:recipe_name, :recipe_description, :user_id)", &r)
+	tx.NamedExec("INSERT INTO recipes (recipe_name, recipe_description, duration, picture, category, kcal, user_id) VALUES (:recipe_name, :recipe_description, :duration, :picture, :category, :kcal, :user_id)", &r)
 	err := tx.Commit()
 	if err != nil {
 		return false
@@ -225,7 +231,7 @@ func editRecipe(r Recipes) bool {
 
 	db := openConnDB()
 	tx := db.MustBegin()
-	tx.NamedExec("UPDATE recipes SET recipe_name=:recipe_name, recipe_description=:recipe_description, user_id=:user_id WHERE recipe_id=:recipe_id", &r)
+	tx.NamedExec("UPDATE recipes SET recipe_name=:recipe_name, recipe_description=:recipe_description, duration=:duration, picture=:picture, category=:category, kcal=:kcal, user_id=:user_id WHERE recipe_id=:recipe_id", &r)
 	err := tx.Commit()
 	if err != nil {
 		return false
@@ -266,12 +272,45 @@ func getRecipeByUserId(user_id string) []byte {
 }
 
 /**
+* [Model][Recipes] Queries the database to get a recipe kcal by its user_id
+ */
+func getRecipeKcalByRecipeId(recipe_id string) int {
+	db := openConnDB()
+	recipe := []Recipes{}
+	query := "SELECT * FROM recipes WHERE recipe_id =" + recipe_id
+	err := db.Select(&recipe, query)
+	recipe_kcal := recipe[0].Kcal
+	if err != nil {
+		log.Fatal(err)
+	}
+	closeConnDB(db)
+	recipe_kcal_int, _ := strconv.Atoi(recipe_kcal)
+	return recipe_kcal_int
+}
+
+/**
 * [Model][Recipes] Queries the database to get a recipe by its recipe_name
  */
 func getRecipeByName(recipe_name string) []byte {
 	row := []Recipes{}
 	db := openConnDB()
 	err := db.Select(&row, "SELECT * FROM recipes WHERE recipe_name LIKE "+"'%"+recipe_name+"%'")
+	if err != nil {
+		log.Fatal(err)
+	}
+	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	j, _ := json.Marshal(row)
+	closeConnDB(db)
+	return j
+}
+
+/**
+* [Model][Recipes] Queries the database to get a recipe by its recipe_name
+ */
+func getRecipeByCategory(category string) []byte {
+	row := []Recipes{}
+	db := openConnDB()
+	err := db.Select(&row, "SELECT * FROM recipes WHERE category LIKE "+"'%"+category+"%'")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -300,12 +339,30 @@ func getIngredientById(id string) []byte {
 }
 
 /**
+* [Model][Ingredients] Queries the database to get a ingredients by its id and returns the kcal
+ */
+func getIngredientKcalById(id string) int {
+	db := openConnDB()
+	ingredient := []Ingredients{}
+	query := "SELECT * FROM ingredients where ingredient_id =" + id
+	err := db.Select(&ingredient, query)
+	ingredient_kcal := ingredient[0].Kcal
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	closeConnDB(db)
+	ingredient_kcal_int, _ := strconv.Atoi(ingredient_kcal)
+	return ingredient_kcal_int
+}
+
+/**
 * [Model][Ingredients] Receives a ingredient as parameter and inserts it in the database
  */
 func insertIngredient(i Ingredients) bool {
 	db := openConnDB()
 	tx := db.MustBegin()
-	tx.NamedExec("INSERT INTO ingredients (ingredient_name) VALUES (:ingredient_name)", &i)
+	tx.NamedExec("INSERT INTO ingredients (ingredient_name, kcal) VALUES (:ingredient_name, :kcal)", &i)
 	err := tx.Commit()
 	if err != nil {
 		return false
@@ -321,8 +378,47 @@ func editIngredient(i Ingredients) bool {
 
 	db := openConnDB()
 	tx := db.MustBegin()
-	tx.NamedExec("UPDATE ingredients SET ingredient_name=:ingredient_name WHERE ingredient_id=:ingredient_id", &i)
-	err := tx.Commit()
+	tx.NamedExec("UPDATE ingredients SET ingredient_name=:ingredient_name, kcal=:kcal WHERE ingredient_id=:ingredient_id", &i)
+	//err := tx.Commit()
+
+	//As an ingredient gets its kcal updated, so does the recipes it belongs to should
+
+	row := []RecipeIngredients{}
+	query := "SELECT * FROM recipeingredients where ingredient_id = " + strconv.Itoa(i.Ingredient_id)
+	err := db.Select(&row, strings.ToLower(query))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s := len(row)
+	var r Recipes
+	for j := 0; j < s; j++ {
+		r.Recipe_id = row[j].Recipe_id
+		kcal_recipe := getRecipeKcalByRecipeId(strconv.Itoa(row[j].Recipe_id))
+		log.Println("kcal_recipe: " + strconv.Itoa(kcal_recipe))
+		kcal_ingredient := getIngredientKcalById(strconv.Itoa(row[j].Ingredient_id))
+		log.Println("kcal_ingredient: " + strconv.Itoa(kcal_ingredient))
+		kcal_total := kcal_recipe - kcal_ingredient
+		log.Println("kcal_total: " + strconv.Itoa(kcal_total))
+		kcal_ingredient, _ = strconv.Atoi(i.Kcal)
+		log.Println("kcal_ingredient 2: " + strconv.Itoa(kcal_ingredient))
+		kcal_total = kcal_recipe + kcal_ingredient
+		r.Kcal = strconv.Itoa(kcal_total)
+		log.Println("kcal_total: " + strconv.Itoa(kcal_total))
+		log.Println("Recipe new kcal: " + r.Kcal)
+		log.Println("Recipe id: " + strconv.Itoa(r.Recipe_id))
+		q := "UPDATE recipes SET kcal=:kcal WHERE recipe_id=:recipe_id"
+		tx.NamedExec(q, &r)
+		log.Println("querry: " + q)
+		/*err = tx.Commit()
+		if err != nil {
+			return false
+		}*/
+	}
+
+	//tx.NamedExec()
+	err = tx.Commit()
+
 	if err != nil {
 		return false
 	}
@@ -384,13 +480,24 @@ func getRecipeIngredientsById(id string) []byte {
 * [Model][RecipeIngredients] Receives RecipeIngredients as parameter and inserts it in the database
  */
 func insertRecipeIngredients(r RecipeIngredients) bool {
+	//As an ingredient was added to the recipe its kcal, must be added to the kcal of the recipe
 	db := openConnDB()
+
+	recipe_kcal := getRecipeKcalByRecipeId(strconv.Itoa(r.Recipe_id))
+	ingredient_kcal := getIngredientKcalById(strconv.Itoa(r.Ingredient_id))
+
+	var re Recipes
+	kcal_total := recipe_kcal + ingredient_kcal
 	tx := db.MustBegin()
+	query := "UPDATE recipes SET kcal=" + strconv.Itoa(kcal_total) + " WHERE recipe_id= " + strconv.Itoa(r.Recipe_id)
+	tx.NamedExec(strings.ToLower(query), &re)
+
 	tx.NamedExec("INSERT INTO recipeingredients (ingredient_id, recipe_id) VALUES (:ingredient_id, :recipe_id)", &r)
 	err := tx.Commit()
 	if err != nil {
 		return false
 	}
+
 	closeConnDB(db)
 	return true
 }
@@ -416,15 +523,63 @@ func editRecipeIngredients(r RecipeIngredients) bool {
 * [Model][RecipeIngredients] Receives an id as parameter and deletes the RecipeIngredients of the received id in the database
  */
 func deleteRecipeIngredients(id string) bool {
+	//As an ingredient was removed from recipeIngredients so should its kcal be removed
 	db := openConnDB()
+	var r RecipeIngredients
+	r.Recipe_id = getRecipeIngredientsByIdRecipeId(id)
+	r.Ingredient_id = getRecipeIngredientsByIdIngredientId(id)
+	log.Println("recipe_id: " + strconv.Itoa(r.Recipe_id))
+
+	recipe_kcal := getRecipeKcalByRecipeId(strconv.Itoa(r.Recipe_id))
+	ingredient_kcal := getIngredientKcalById(strconv.Itoa(r.Ingredient_id))
+	kcal_total := recipe_kcal - ingredient_kcal
+	log.Println("kcal_total: " + strconv.Itoa(kcal_total))
+	var re Recipes
 	tx := db.MustBegin()
+	query := "UPDATE recipes SET kcal=" + strconv.Itoa(kcal_total) + " WHERE recipe_id= " + strconv.Itoa(r.Recipe_id)
+	tx.NamedExec(strings.ToLower(query), &re)
+
 	tx.MustExec("DELETE FROM recipeingredients WHERE recipeingredient_id=" + id)
 	err := tx.Commit()
 	if err != nil {
 		return false
 	}
+
 	closeConnDB(db)
 	return true
+}
+
+/**
+* [Model][RecipeIngredients] Queries the database to get a RecipeIngredients by its id
+ */
+func getRecipeIngredientsByIdRecipeId(id string) int {
+	db := openConnDB()
+	row := []RecipeIngredients{}
+	query := "SELECT * FROM recipeingredients WHERE recipeingredient_id = " + id
+	err := db.Select(&row, strings.ToLower(query))
+	if err != nil {
+		log.Fatal(err)
+	}
+	reciped_id_int := row[0].Recipe_id
+	closeConnDB(db)
+	return reciped_id_int
+}
+
+/**
+* [Model][RecipeIngredients] Queries the database to get a RecipeIngredients by its id
+ */
+func getRecipeIngredientsByIdIngredientId(id string) int {
+	db := openConnDB()
+	row := []RecipeIngredients{}
+	query := "SELECT * FROM recipeingredients WHERE recipeingredient_id = " + id
+	err := db.Select(&row, query)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ingredient_id_int := row[0].Ingredient_id
+	closeConnDB(db)
+	return ingredient_id_int
 }
 
 /**
@@ -644,6 +799,17 @@ func getRecipeByNameRoute(w http.ResponseWriter, r *http.Request) {
 	w.Write(rows)
 }
 
+/**
+* [Controller][Recipes] function to get a recipe by category
+ */
+func getRecipeByCategoryRoute(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	rows := getRecipeByCategory(vars["category"])
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(rows)
+}
+
 //-----Ingredients Functions - Controller------
 /**
 * [Controller][Ingredients] function to get an ingredient by id
@@ -786,31 +952,6 @@ func getRecipeIngredientsByRecipeRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 /**
-* test
- */
-func test() []byte {
-	/*row := []User{}
-	db := openConnDB()
-	err := db.Select(&row, "SELECT * FROM users WHERE user_id ="+id)
-	if err != nil {
-		log.Fatal(err)
-	}
-	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	j, _ := json.Marshal(row)
-	closeConnDB(db)
-	return j*/
-	ola := []byte("ola mundo")
-	return ola
-}
-
-func testRoute(w http.ResponseWriter, r *http.Request) {
-	rows := test()
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(rows)
-}
-
-/**
 * Pesquisar uma receita por ingredientes
  */
 /*func getRecipeByIngredients(names []string) []byte {
@@ -822,7 +963,7 @@ func testRoute(w http.ResponseWriter, r *http.Request) {
 	s := len(names)
 
 	var r []RecipeIngredients
-	for i := 1; i < s; i++ {
+	for i := 0; i < s; i++ {
 		rows, err := db.Queryx("SELECT * FROM recipeingredients WHERE recipeingredients_id IN (select ingredients_id from ingredients where ingredients_name = " + "'" + names[i] + "')")
 		for rows.Next() {
 			err = rows.StructScan(&r[i])
@@ -834,7 +975,7 @@ func testRoute(w http.ResponseWriter, r *http.Request) {
 		recipe_id = strconv.Itoa(r[i].Recipe_id)
 	}
 
-	recipe := []Recipes{}
+	recipe := []Recipes{}Name
 	if valid_recipe == true {
 		err := db.Select(&recipe, "SELECT * FROM recipes WHERE recipe_id ="+recipe_id)
 		if err != nil {
@@ -887,6 +1028,7 @@ func main() {
 	r.HandleFunc("/api/editRecipe", editRecipeRoute).Methods("POST")
 	r.HandleFunc("/api/searchUserRecipe/id/{id}", getRecipeByUserIdRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeName/name/{name}", getRecipeByNameRoute).Methods("GET")
+	r.HandleFunc("/api/searchRecipeCategory/category/{category}", getRecipeByCategory).Methods("GET")
 
 	//Ingredients routes
 	r.HandleFunc("/api/insertIngredient", insertIngredientRoute).Methods("POST")
@@ -902,9 +1044,6 @@ func main() {
 	r.HandleFunc("/api/editRecipeIngredients", editRecipeIngredientsRoute).Methods("POST")
 	r.HandleFunc("/api/searchRecipeIngredientsName/name/{name}", getRecipeIngredientsByIngredientRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeRecipesName/name/{name}", getRecipeIngredientsByRecipeRoute).Methods("GET")
-
-	//test route
-	r.HandleFunc("/api/test/test/", testRoute).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8000", handlers.CORS(corsObj, headersOk, methodsOk)(r))) // se falhar dá erro !*/
 }
