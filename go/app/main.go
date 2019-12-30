@@ -304,6 +304,22 @@ func getRecipeByName(recipe_name string) []byte {
 	return j
 }
 
+/**
+* [Model][Recipes] Queries the database to get a recipe by its recipe_name
+ */
+func getRecipeByCategory(category string) []byte {
+	row := []Recipes{}
+	db := openConnDB()
+	err := db.Select(&row, "SELECT * FROM recipes WHERE category LIKE "+"'%"+category+"%'")
+	if err != nil {
+		log.Fatal(err)
+	}
+	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	j, _ := json.Marshal(row)
+	closeConnDB(db)
+	return j
+}
+
 //-----Ingredients Functions - Model-----
 
 /**
@@ -783,6 +799,17 @@ func getRecipeByNameRoute(w http.ResponseWriter, r *http.Request) {
 	w.Write(rows)
 }
 
+/**
+* [Controller][Recipes] function to get a recipe by category
+ */
+func getRecipeByCategoryRoute(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	rows := getRecipeByCategory(vars["category"])
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(rows)
+}
+
 //-----Ingredients Functions - Controller------
 /**
 * [Controller][Ingredients] function to get an ingredient by id
@@ -948,7 +975,7 @@ func getRecipeIngredientsByRecipeRoute(w http.ResponseWriter, r *http.Request) {
 		recipe_id = strconv.Itoa(r[i].Recipe_id)
 	}
 
-	recipe := []Recipes{}
+	recipe := []Recipes{}Name
 	if valid_recipe == true {
 		err := db.Select(&recipe, "SELECT * FROM recipes WHERE recipe_id ="+recipe_id)
 		if err != nil {
@@ -1001,6 +1028,7 @@ func main() {
 	r.HandleFunc("/api/editRecipe", editRecipeRoute).Methods("POST")
 	r.HandleFunc("/api/searchUserRecipe/id/{id}", getRecipeByUserIdRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeName/name/{name}", getRecipeByNameRoute).Methods("GET")
+	r.HandleFunc("/api/searchRecipeCategory/category/{category}", getRecipeByCategory).Methods("GET")
 
 	//Ingredients routes
 	r.HandleFunc("/api/insertIngredient", insertIngredientRoute).Methods("POST")
