@@ -210,6 +210,22 @@ func getRecipeById(id string) []byte {
 }
 
 /**
+* [Model][Recipes] Queries the database to get all recipes
+ */
+func getRecipeAll() []byte {
+	row := []Recipes{}
+	db := openConnDB()
+	err := db.Select(&row, "SELECT * FROM recipes")
+	if err != nil {
+		log.Fatal(err)
+	}
+	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	j, _ := json.Marshal(row)
+	closeConnDB(db)
+	return j
+}
+
+/**
 * [Model][Recipes] Receives a recipe as parameter and inserts it in the database
  */
 func insertRecipe(r Recipes) bool {
@@ -323,12 +339,28 @@ func getRecipeByCategory(category string) []byte {
 //-----Ingredients Functions - Model-----
 
 /**
-* [Model][Ingredients] Queries the database to get a ingredients by its id
+* [Model][Ingredients] Queries the database to get all ingredients
  */
 func getIngredientById(id string) []byte {
 	row := []Ingredients{}
 	db := openConnDB()
 	err := db.Select(&row, "SELECT * FROM ingredients WHERE ingredient_id ="+id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	j, _ := json.Marshal(row)
+	closeConnDB(db)
+	return j
+}
+
+/**
+* [Model][Ingredients] Queries the database to get a ingredients by its id
+ */
+func getIngredientAll() []byte {
+	row := []Ingredients{}
+	db := openConnDB()
+	err := db.Select(&row, "SELECT * FROM ingredients")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -736,6 +768,17 @@ func getRecipeByIdRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 /**
+* [Controller][Recipes] function to get all recipes
+ */
+func getRecipeAllRoute(w http.ResponseWriter) { //, r *http.Request
+	//vars := mux.Vars(r)
+	rows := getRecipeAll()
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(rows)
+}
+
+/**
 * [Controller][Recipes] function to insert a recipe
  */
 func insertRecipeRoute(w http.ResponseWriter, r *http.Request) {
@@ -817,6 +860,17 @@ func getRecipeByCategoryRoute(w http.ResponseWriter, r *http.Request) {
 func getIngredientByIdRoute(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	rows := getIngredientById(vars["id"])
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(rows)
+}
+
+/**
+* [Controller][Ingredients] function to get all ingredients
+ */
+func getIngredientAllRoute(w http.ResponseWriter) { //, r *http.Request
+	//vars := mux.Vars(r)
+	rows := getIngredientAll()
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(rows)
@@ -1029,6 +1083,7 @@ func main() {
 	r.HandleFunc("/api/searchUserRecipe/id/{id}", getRecipeByUserIdRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeName/name/{name}", getRecipeByNameRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeCategory/category/{category}", getRecipeByCategory).Methods("GET")
+	r.HandleFunc("/api/searchRecipeAll", getRecipeAllRoute).Methods("GET")
 
 	//Ingredients routes
 	r.HandleFunc("/api/insertIngredient", insertIngredientRoute).Methods("POST")
@@ -1036,6 +1091,7 @@ func main() {
 	r.HandleFunc("/api/deleteIngredient/id/{id}", deleteIngredientRoute).Methods("DELETE")
 	r.HandleFunc("/api/editIngredient", editIngredientRoute).Methods("POST")
 	r.HandleFunc("/api/searchIngredientName/name/{name}", getIngredientByNameRoute).Methods("GET")
+	r.HandleFunc("/api/searchIngredientAll", getIngredientAllRoute).Methods("GET")
 
 	//RecipeIngredients routes
 	r.HandleFunc("/api/insertRecipeIngredients", insertRecipeIngredientsRoute).Methods("POST")
