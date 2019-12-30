@@ -10,32 +10,43 @@ import { Keyboard } from 'react-native'
 function ShowSearch(props) {
     const [search, setSearch] = useState("");
     const [recipes, setRecipes] = useState([]);
+    const [isError, setIsError] = useState(false);
 
-    useEffect(() => {                 //aqui iremos preencher o array das receitas (default) logo após o render (get de allrecipes)
-        setRecipes([
-          ...recipes,
-          {
-            id: 1,
-            label: "Joao"
-          }
-        ]);
+    useEffect(() => {
+        //axios.get("http://192.168.1.68:8000/api/searchRecipeAll)
+        axios.get("http://192.168.1.119:8000/api/searchRecipeAll")
+        .then(result => {
+            console.log(result.data)
+            if (result.status==200) { 
+                setRecipes(result.data);
+            } else {
+                setIsError(true);
+            }
+        }).catch(e => {
+            setIsError(true);
+        });
       }, []);
     
-    const addEntryClick = () => {     //aqui iremos atualizar o array das receitas para as receitas pesquisadas (resposta ao get da pesquisa)
-        setRecipes([
-            ...recipes,
-            {
-            id: (recipes[(recipes.length-1)].id)+1,
-            label: search.text
+    const addEntryClick = () => {
+        //axios.get("http://192.168.1.68:8000/api/searchRecipeName/name/"+search.text)
+        axios.get("http://192.168.1.119:8000/api/searchRecipeName/name/"+search.text)
+        .then(result => {
+            console.log(result.data)
+            if (result.status==200) { 
+                setRecipes(result.data);
+            } else {
+                setIsError(true);
             }
-        ]);
+        }).catch(e => {
+            setIsError(true);
+        });
     };
 
     return (
         <Content padder>
             <Item>
                 <Icon name="ios-menu" /*menu???*//>
-                <Input placeholder="Search" onChangeText={(text) => setSearch({text})} returnKeyType={"search"} onSubmitEditing={()=>{ addEntryClick(); Keyboard.dismiss();}} blurOnSubmit={false} />
+                <Input placeholder="Search" onChangeText={(text) => setSearch({text})} returnKeyType={"search"} onSubmitEditing={()=>{ addEntryClick(); Keyboard.dismiss();}} blurOnSubmit={true} />
             </Item>
             <ShowContent recipes={recipes} />
         </Content>
