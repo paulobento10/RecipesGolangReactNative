@@ -770,7 +770,7 @@ func getRecipeByIdRoute(w http.ResponseWriter, r *http.Request) {
 /**
 * [Controller][Recipes] function to get all recipes
  */
-func getRecipeAllRoute(w http.ResponseWriter) { //, r *http.Request
+func getRecipeAllRoute(w http.ResponseWriter, r *http.Request) {
 	//vars := mux.Vars(r)
 	rows := getRecipeAll()
 	w.Header().Set("Content-Type", "application/json")
@@ -868,7 +868,7 @@ func getIngredientByIdRoute(w http.ResponseWriter, r *http.Request) {
 /**
 * [Controller][Ingredients] function to get all ingredients
  */
-func getIngredientAllRoute(w http.ResponseWriter) { //, r *http.Request
+func getIngredientAllRoute(w http.ResponseWriter, r *http.Request) {
 	//vars := mux.Vars(r)
 	rows := getIngredientAll()
 	w.Header().Set("Content-Type", "application/json")
@@ -1082,7 +1082,7 @@ func main() {
 	r.HandleFunc("/api/editRecipe", editRecipeRoute).Methods("POST")
 	r.HandleFunc("/api/searchUserRecipe/id/{id}", getRecipeByUserIdRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeName/name/{name}", getRecipeByNameRoute).Methods("GET")
-	r.HandleFunc("/api/searchRecipeCategory/category/{category}", getRecipeByCategory).Methods("GET")
+	r.HandleFunc("/api/searchRecipeCategory/category/{category}", getRecipeByCategoryRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeAll", getRecipeAllRoute).Methods("GET")
 
 	//Ingredients routes
