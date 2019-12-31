@@ -58,7 +58,7 @@ function ShowContent(props) {
           </Card>
         </Content>
         ))}
-        { isError && <Text style={{color: '#ff0000', textAlign: 'center', fontWeight: 'bold', fontSize: 18,}}>No results.</Text> }
+        { props.recipes.length < 0 && <Text style={{color: '#ff0000', textAlign: 'center', fontWeight: 'bold', fontSize: 18,}}>No results.</Text> }
         { props.recipes.length > 0 && 
         <Pagination total={Math.ceil((props.recipes.length)/5)} current={current} locale={locale} onChange={handleChange}/>
         }
