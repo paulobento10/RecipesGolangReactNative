@@ -226,6 +226,20 @@ func getRecipeAll() []byte {
 }
 
 /**
+* [Model][Recipes] Queries the database to get all recipes no json
+ */
+func getRecipeAllNoJson() []Recipes {
+	row := []Recipes{}
+	db := openConnDB()
+	err := db.Select(&row, "SELECT * FROM recipes")
+	if err != nil {
+		log.Fatal(err)
+	}
+	closeConnDB(db)
+	return row
+}
+
+/**
 * [Model][Recipes] Receives a recipe as parameter and inserts it in the database
  */
 func insertRecipe(r Recipes) bool {
@@ -368,6 +382,27 @@ func getIngredientAll() []byte {
 	j, _ := json.Marshal(row)
 	closeConnDB(db)
 	return j
+}
+
+/**
+* [Model][Ingredients] Queries the database to get a ingredients by its name and returns an array with them
+ */
+func getIngredientAllByNameNoJson(names []string) []Ingredients {
+	row := []Ingredients{}
+	db := openConnDB()
+
+	size := len(names)
+
+	for i:=0;i<size;i++{
+		aux_name := "'" + names[i] + "'"
+		err := db.Select(&row, "SELECT * FROM ingredients where ingredient_name = " + aux_name)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	closeConnDB(db)
+	return row
 }
 
 /**
@@ -1008,53 +1043,57 @@ func getRecipeIngredientsByRecipeRoute(w http.ResponseWriter, r *http.Request) {
 /**
 * Pesquisar uma receita por ingredientes
  */
-/*func getRecipeByIngredients(names []string) []byte {
-	row := []RecipeIngredients{}
+func getRecipeByIngredients(names []string) []byte {
 	db := openConnDB()
 
-	recipe_id := "not"
+	row := []RecipeIngredients{}
 	valid_recipe := true
 	s := len(names)
+	recipes := getRecipeAllNoJson()
+	s_recipes := len(recipes)
+	ingredients := getIngredientAllByNameNoJson(names)
 
-	var r []RecipeIngredients
-	for i := 0; i < s; i++ {
-		rows, err := db.Queryx("SELECT * FROM recipeingredients WHERE recipeingredients_id IN (select ingredients_id from ingredients where ingredients_name = " + "'" + names[i] + "')")
-		for rows.Next() {
-			err = rows.StructScan(&r[i])
+	valid_recipes := make([]Recipes, s)
+
+	for i:=0;i<s_recipes;i++{
+
+		recipe_id := strconv.Itoa(recipes[i].Recipe_id)
+		for j:=0;j<s;j++{
+			ingredient_id := strconv.Itoa(ingredients[j].Ingredient_id)
+			query := "SELECT * FROM recipeingredients WHERE recipe_id = " + recipe_id + " and ingredient_id = " + ingredient_id
+			err := db.Select(&row, strings.ToLower(query))
+
+			if  row == nil {
+				valid_recipe = false
+			}
+
+			if err != nil {
+				valid_recipe = false
+				log.Fatal(err)
+			}
 		}
-		if err != nil {
-			valid_recipe = false
-			log.Fatal(err)
+		if valid_recipe == true {
+			valid_recipes = append(valid_recipes, recipes[i])
 		}
-		recipe_id = strconv.Itoa(r[i].Recipe_id)
 	}
 
-	recipe := []Recipes{}Name
-	if valid_recipe == true {
-		err := db.Select(&recipe, "SELECT * FROM recipes WHERE recipe_id ="+recipe_id)
-		if err != nil {
-			valid_recipe = false
-			log.Fatal(err)
-		}
-	}
-	j, _ := json.Marshal(row)
+
+	j, _ := json.Marshal(valid_recipes)
 	closeConnDB(db)
 	return j
-}*/
+}
 
 /**
 * [Controller][RecipeIngredients] function to get RecipeIngredients by id
  */
-/*func getRecipeByIngredientsRoute(w http.ResponseWriter, r *http.Request) {
+func getRecipeByIngredientsRoute(w http.ResponseWriter, r *http.Request) {
 	//vars := mux.Vars(r)
-	for k, v := range mux.Vars(r) {
-		//log.Printf("key=%v, value=%v", k, v)
-		rows := getRecipeByIngredients(k[v])
-	}
+	ingredient_names := []string{"tomate","alface"}
+	rows := getRecipeByIngredients(ingredient_names)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(rows)
-}*/
+}
 
 func main() {
 	//Init router
@@ -1084,6 +1123,7 @@ func main() {
 	r.HandleFunc("/api/searchRecipeName/name/{name}", getRecipeByNameRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeCategory/category/{category}", getRecipeByCategoryRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeAll", getRecipeAllRoute).Methods("GET")
+	r.HandleFunc("/api/searchRecipeByIngredients", getRecipeByIngredientsRoute).Methods("GET")
 
 	//Ingredients routes
 	r.HandleFunc("/api/insertIngredient", insertIngredientRoute).Methods("POST")
