@@ -393,9 +393,9 @@ func getIngredientAllByNameNoJson(names []string) []Ingredients {
 
 	size := len(names)
 
-	for i:=0;i<size;i++{
+	for i := 0; i < size; i++ {
 		aux_name := "'" + names[i] + "'"
-		err := db.Select(&row, "SELECT * FROM ingredients where ingredient_name = " + aux_name)
+		err := db.Select(&row, "SELECT * FROM ingredients where ingredient_name = "+aux_name)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -1055,15 +1055,15 @@ func getRecipeByIngredients(names []string) []byte {
 
 	valid_recipes := make([]Recipes, s)
 
-	for i:=0;i<s_recipes;i++{
+	for i := 0; i < s_recipes; i++ {
 
 		recipe_id := strconv.Itoa(recipes[i].Recipe_id)
-		for j:=0;j<s;j++{
+		for j := 0; j < s; j++ {
 			ingredient_id := strconv.Itoa(ingredients[j].Ingredient_id)
 			query := "SELECT * FROM recipeingredients WHERE recipe_id = " + recipe_id + " and ingredient_id = " + ingredient_id
 			err := db.Select(&row, strings.ToLower(query))
 
-			if  row == nil {
+			if row == nil {
 				valid_recipe = false
 			}
 
@@ -1077,7 +1077,6 @@ func getRecipeByIngredients(names []string) []byte {
 		}
 	}
 
-
 	j, _ := json.Marshal(valid_recipes)
 	closeConnDB(db)
 	return j
@@ -1088,7 +1087,7 @@ func getRecipeByIngredients(names []string) []byte {
  */
 func getRecipeByIngredientsRoute(w http.ResponseWriter, r *http.Request) {
 	//vars := mux.Vars(r)
-	ingredient_names := []string{"tomate","alface"}
+	ingredient_names := []string{"tomate", "alface", "banana"}
 	rows := getRecipeByIngredients(ingredient_names)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
