@@ -95,7 +95,6 @@ func searchUserBDbyID(id string) []byte {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	j, _ := json.Marshal(row)
 	closeConnDB(db)
 	return j
@@ -153,7 +152,7 @@ func deleteUser(id string) bool {
 func checkUser(email string, pass string) bool {
 	var u User
 	db := openConnDB()
-	err := db.Get(&u, "SELECT email, password FROM users WHERE email like "+"'"+email+"'")
+	err := db.Get(&u, "SELECT * FROM users WHERE email like "+"'"+email+"'")
 	if err != nil {
 		return false
 	}
