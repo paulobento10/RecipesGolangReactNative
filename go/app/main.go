@@ -132,6 +132,22 @@ func editUser(user User) bool {
 }
 
 /**
+* [Model][User] Receives a user as parameter and updates its name in the database
+ */
+func editUserName(user User) bool {
+
+	db := openConnDB()
+	tx := db.MustBegin()
+	tx.NamedExec("UPDATE users SET user_name=:user_name WHERE user_id=:user_id", &user)
+	err := tx.Commit()
+	if err != nil {
+		return false
+	}
+	closeConnDB(db)
+	return true
+}
+
+/**
 * [Model][User] Receives an id as parameter and deletes the user of the received id in the database
  */
 func deleteUser(id string) bool {
@@ -261,6 +277,22 @@ func editRecipe(r Recipes) bool {
 	db := openConnDB()
 	tx := db.MustBegin()
 	tx.NamedExec("UPDATE recipes SET recipe_name=:recipe_name, recipe_description=:recipe_description, duration=:duration, picture=:picture, category=:category, kcal=:kcal, user_id=:user_id WHERE recipe_id=:recipe_id", &r)
+	err := tx.Commit()
+	if err != nil {
+		return false
+	}
+	closeConnDB(db)
+	return true
+}
+
+/**
+* [Model][Recipes] Receives a recipe as parameter and updates its name in the database
+ */
+func editRecipeName(r Recipes) bool {
+
+	db := openConnDB()
+	tx := db.MustBegin()
+	tx.NamedExec("UPDATE recipes SET recipe_name=:recipe_name WHERE recipe_id=:recipe_id", &r)
 	err := tx.Commit()
 	if err != nil {
 		return false
@@ -484,6 +516,23 @@ func editIngredient(i Ingredients) bool {
 
 	//tx.NamedExec()
 	err = tx.Commit()
+
+	if err != nil {
+		return false
+	}
+	closeConnDB(db)
+	return true
+}
+
+/**
+* [Model][Ingredients] Receives a ingredient as parameter and updates it in the database
+ */
+func editIngredientName(i Ingredients) bool {
+
+	db := openConnDB()
+	tx := db.MustBegin()
+	tx.NamedExec("UPDATE ingredients SET ingredient_name=:ingredient_name WHERE ingredient_id=:ingredient_id", &i)
+	err := tx.Commit()
 
 	if err != nil {
 		return false
@@ -729,6 +778,20 @@ func editUserRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 /**
+* [Controller][User] function to edit a user name
+ */
+func editUserNameRoute(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var user User
+	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	json.NewDecoder(r.Body).Decode(&user)
+	result := editUserName(user)
+	j, _ := json.Marshal(result)
+	w.WriteHeader(http.StatusOK)
+	w.Write(j)
+}
+
+/**
 * [Controller][User] function to delete a user
  */
 func deleteUserRoute(w http.ResponseWriter, r *http.Request) {
@@ -843,6 +906,20 @@ func editRecipeRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 /**
+* [Controller][Recipes] function to edit a recipe name
+ */
+func editRecipeNameRoute(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var recipe Recipes
+	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	json.NewDecoder(r.Body).Decode(&recipe)
+	result := editRecipeName(recipe)
+	j, _ := json.Marshal(result)
+	w.WriteHeader(http.StatusOK)
+	w.Write(j)
+}
+
+/**
 * [Controller][Recipes] function to delete a recipe
  */
 func deleteRecipeRoute(w http.ResponseWriter, r *http.Request) {
@@ -935,6 +1012,19 @@ func editIngredientRoute(w http.ResponseWriter, r *http.Request) {
 	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	json.NewDecoder(r.Body).Decode(&ingredient)
 	result := editIngredient(ingredient)
+	j, _ := json.Marshal(result)
+	w.WriteHeader(http.StatusOK)
+	w.Write(j)
+}
+
+/**
+* [Controller][Ingredients] function to edit an ingredients name
+ */
+func editIngredientNameRoute(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var ingredient Ingredients
+	json.NewDecoder(r.Body).Decode(&ingredient)
+	result := editIngredientName(ingredient)
 	j, _ := json.Marshal(result)
 	w.WriteHeader(http.StatusOK)
 	w.Write(j)
@@ -1109,6 +1199,7 @@ func main() {
 	r.HandleFunc("/api/searchUser/id/{id}", getUsersByID).Methods("GET")
 	r.HandleFunc("/api/deleteUser/id/{id}", deleteUserRoute).Methods("DELETE")
 	r.HandleFunc("/api/editUser", editUserRoute).Methods("POST")
+	r.HandleFunc("/api/editUserName", editUserNameRoute).Methods("POST")
 	r.HandleFunc("/api/login", login).Methods("POST")
 	r.HandleFunc("/api/allUsers", getAllUsers).Methods("GET")
 
@@ -1117,6 +1208,7 @@ func main() {
 	r.HandleFunc("/api/searchRecipe/id/{id}", getRecipeByIdRoute).Methods("GET")
 	r.HandleFunc("/api/deleteRecipe/id/{id}", deleteRecipeRoute).Methods("DELETE")
 	r.HandleFunc("/api/editRecipe", editRecipeRoute).Methods("POST")
+	r.HandleFunc("/api/editRecipeName", editRecipeNameRoute).Methods("POST")
 	r.HandleFunc("/api/searchUserRecipe/id/{id}", getRecipeByUserIdRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeName/name/{name}", getRecipeByNameRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeCategory/category/{category}", getRecipeByCategoryRoute).Methods("GET")
@@ -1128,6 +1220,7 @@ func main() {
 	r.HandleFunc("/api/searchIngredient/id/{id}", getIngredientByIdRoute).Methods("GET")
 	r.HandleFunc("/api/deleteIngredient/id/{id}", deleteIngredientRoute).Methods("DELETE")
 	r.HandleFunc("/api/editIngredient", editIngredientRoute).Methods("POST")
+	r.HandleFunc("/api/editIngredientName", editIngredientNameRoute).Methods("POST")
 	r.HandleFunc("/api/searchIngredientName/name/{name}", getIngredientByNameRoute).Methods("GET")
 	r.HandleFunc("/api/searchIngredientAll", getIngredientAllRoute).Methods("GET")
 
