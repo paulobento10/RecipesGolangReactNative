@@ -151,7 +151,7 @@ function ShowSearch(props) {
                 </Grid>
             }
             </Content>
-            <ShowContent recipes={recipes} />
+            <ShowContent user_id={props.user_id} recipes={recipes} />
         </Content>
     );
 }

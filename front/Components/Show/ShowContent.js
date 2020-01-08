@@ -6,6 +6,7 @@ import { Text, View } from 'react-native';
 import { Pagination} from '@ant-design/react-native';
 import { Image } from 'react-native';
 import { Card, CardItem, Thumbnail, Button, Left, Right } from 'native-base';
+import { Actions } from 'react-native-router-flux';
 
 
 function ShowContent(props) {
@@ -26,6 +27,24 @@ function ShowContent(props) {
     };
 
     const goToRecipe = (id) => {
+      var prop={
+        user_id: props.user_id,
+        recipes: 1,
+      }
+
+      props.recipes.forEach(element => {
+        if(element.recipe_id==id){
+          prop={
+            user_id: props.user_id,
+            recipes: element,
+          }
+        }
+      });
+     
+      
+
+      Actions.recipe({propsRecipe: prop});
+      
       //Actions para o Recipe e enviamos o id. Depois no Recipe, fazemos um get recipe com o id e obtemos toda a informação
     }
 

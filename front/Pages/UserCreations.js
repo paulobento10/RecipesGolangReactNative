@@ -3,13 +3,12 @@ import { Container, Body, Right, Icon, Button, Title, Text } from 'native-base';
 import Search from '../Components/Show/ShowSearch';
 import Header from '../Components/Show/ShowHeader';
 
-function Show(props) {
+function UserCreations(props) {
     return (
       <Container>
-            <Header user_id={props.user_id}/>
-            <Search user_id={props.user_id}/>
+            <Text>User Nrº {props.user_id} Creations (Undone)</Text>
       </Container>
     );
 }
 
-export default Show;
+export default UserCreations;
