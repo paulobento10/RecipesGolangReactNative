@@ -20,11 +20,9 @@ function SignUp(props) {
     //axios.post("http://192.168.1.68:8000/api/insertUser", user)
     axios.post("http://192.168.1.119:8000/api/insertUser", user)
     .then(result => {  
-      console.log(result.data);
       if (result.data==true) {
         Actions.signin();
       } else {
-        console.log(result.data);
         setIsError(true);
       }
     }).catch(e => {

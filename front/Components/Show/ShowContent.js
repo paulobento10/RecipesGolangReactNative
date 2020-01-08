@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Container, Header, Content, Body } from 'native-base';
 import Icon from 'react-native-vector-icons/FontAwesome';
-//import { Icon } from '@ant-design/react-native';
 import { Text, View } from 'react-native';
 import { Pagination} from '@ant-design/react-native';
 import { Image } from 'react-native';

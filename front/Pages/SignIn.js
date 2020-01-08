@@ -18,7 +18,6 @@ function SignIn(props) {
     //axios.post("http://192.168.1.68:8000/api/login", user)
     axios.post("http://192.168.1.119:8000/api/login", user)
     .then(result => {
-      console.log(result.data);
       if (result.data>=true) {
         Actions.show({user_id: result.data});
       } else {

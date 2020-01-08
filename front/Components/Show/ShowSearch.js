@@ -78,6 +78,7 @@ function ShowSearch(props) {
         //axios.get("http://192.168.1.68:8000/api/searchRecipeCategory/category/"+meal.value)
         axios.get("http://192.168.1.119:8000/api/searchRecipeCategory/category/"+meal.value)
         .then(result => {
+            console.log(result.data);
             if (result.status==200) { 
                 setRecipes(result.data);
             } else {
@@ -90,11 +91,11 @@ function ShowSearch(props) {
 
     const ingredientGet = () => {
         //axios.get("http://192.168.1.68:8000/api/searchIngredientName/name/"+ingredient.value)
-        axios.get("http://192.168.1.119:8000/api/searchIngredientName/name/"+ingredient.value)  //MUDAR ROTA
+        axios.get("http://192.168.1.119:8000/api/searchRecipeNameTotal/name/"+ingredient.value) 
         .then(result => {
             console.log(result.data);
             if (result.status==200) { 
-                //setRecipes(result.data);
+                setRecipes(result.data);
             } else {
                 setIsError(true);
             }

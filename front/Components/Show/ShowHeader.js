@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { Container, Header, Body, Right, Icon, Button, Title, Text } from 'native-base';
+import React from 'react';
+import { Header, Body, Right, Icon, Title } from 'native-base';
 import { Actions } from 'react-native-router-flux';
 
 function ShowHeader(props) {
