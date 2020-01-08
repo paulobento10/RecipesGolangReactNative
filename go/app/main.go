@@ -572,6 +572,23 @@ func getIngredientByName(ingredient_name string) []byte {
 	return j
 }
 
+/**
+* [Model][Ingredients] Queries the database to get the ingredients of a recipe
+ */
+func getIngredientsByRecipeId(recipe_id string) []byte {
+	row := []Ingredients{}
+	db := openConnDB()
+	query := "SELECT * FROM ingredients WHERE ingredient_id IN(SELECT ingredient_id FROM recipeingredients WHERE recipe_id = " + recipe_id + ")"
+	err := db.Select(&row, query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	j, _ := json.Marshal(row)
+	closeConnDB(db)
+	return j
+}
+
 //-----RecipeIngredients Functions - Model------
 
 /**
@@ -1080,6 +1097,17 @@ func getIngredientByNameRoute(w http.ResponseWriter, r *http.Request) {
 	w.Write(rows)
 }
 
+/**
+* [Controller][Ingredients] function to get an ingredient by ingredient_name
+ */
+func getIngredientsByRecipeIdRoute(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	rows := getIngredientsByRecipeId(vars["id"])
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(rows)
+}
+
 //-----RecipeIngredients Functions - Controller------
 /**
 * [Controller][RecipeIngredients] function to get RecipeIngredients by id
@@ -1251,6 +1279,7 @@ func main() {
 	r.HandleFunc("/api/editIngredientName", editIngredientNameRoute).Methods("POST")
 	r.HandleFunc("/api/searchIngredientName/name/{name}", getIngredientByNameRoute).Methods("GET")
 	r.HandleFunc("/api/searchIngredientAll", getIngredientAllRoute).Methods("GET")
+	r.HandleFunc("/api/getIngredientsByRecipeId/id/{id}", getIngredientsByRecipeIdRoute).Methods("GET")
 
 	//RecipeIngredients routes
 	r.HandleFunc("/api/insertRecipeIngredients", insertRecipeIngredientsRoute).Methods("POST")
