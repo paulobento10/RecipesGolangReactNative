@@ -257,16 +257,16 @@ func getRecipeAllNoJson() []Recipes {
 /**
 * [Model][Recipes] Receives a recipe as parameter and inserts it in the database
  */
-func insertRecipe(r Recipes) bool {
+func insertRecipe(r Recipes) int {
 	db := openConnDB()
 	tx := db.MustBegin()
 	tx.NamedExec("INSERT INTO recipes (recipe_name, recipe_description, duration, picture, category, kcal, user_id) VALUES (:recipe_name, :recipe_description, :duration, :picture, :category, :kcal, :user_id)", &r)
 	err := tx.Commit()
 	if err != nil {
-		return false
+		return -1
 	}
 	closeConnDB(db)
-	return true
+	return r.Recipe_id
 }
 
 /**
@@ -581,6 +581,22 @@ func getRecipeIngredientsById(id string) []byte {
 	row := []RecipeIngredients{}
 	db := openConnDB()
 	query := "SELECT recipeingredient_id, ingredient_id, recipe_id FROM recipeingredients WHERE recipeingredient_id = " + id
+	err := db.Select(&row, strings.ToLower(query))
+	if err != nil {
+		log.Fatal(err)
+	}
+	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	j, _ := json.Marshal(row)
+	closeConnDB(db)
+	return j
+}
+
+func getRecipeByIngredientNameTotal(ingredient_name string) []byte {
+	row := []Recipes{}
+	db := openConnDB()
+	//query := "SELECT * FROM recipeingredients WHERE ingredient_id = " + ingredient_id
+	ingredient_name = "'" + ingredient_name + "'"
+	query := "SELECT * FROM recipes where recipe_id IN (SELECT recipe_id FROM recipeingredients WHERE ingredient_id IN (select ingredient_id from ingredients where ingredient_name = " + ingredient_name + "))"
 	err := db.Select(&row, strings.ToLower(query))
 	if err != nil {
 		log.Fatal(err)
@@ -964,6 +980,17 @@ func getRecipeByCategoryRoute(w http.ResponseWriter, r *http.Request) {
 	w.Write(rows)
 }
 
+/**
+* [Controller][Recipes] function to get a recipe by ingredient name
+ */
+func getRecipeByIngredientNameTotalRoute(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	rows := getRecipeByIngredientNameTotal(vars["name"])
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(rows)
+}
+
 //-----Ingredients Functions - Controller------
 /**
 * [Controller][Ingredients] function to get an ingredient by id
@@ -1214,6 +1241,7 @@ func main() {
 	r.HandleFunc("/api/searchRecipeCategory/category/{category}", getRecipeByCategoryRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeAll", getRecipeAllRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeByIngredients", getRecipeByIngredientsRoute).Methods("GET")
+	r.HandleFunc("/api/searchRecipeNameTotal/name/{name}", getRecipeByIngredientNameTotalRoute).Methods("GET")
 
 	//Ingredients routes
 	r.HandleFunc("/api/insertIngredient", insertIngredientRoute).Methods("POST")
