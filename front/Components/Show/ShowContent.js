@@ -52,7 +52,7 @@ function ShowContent(props) {
             </CardItem>
             <CardItem>
               <Body>
-        <Text numberOfLines={2} style={{ width: 300 }}><Icon name='clock-o' style={{fontSize: 18}}/> {val.duration}m      <Icon name="bar-chart-o" style={{fontSize: 18}} /> {val.kcal}kcal</Text>
+                <Text numberOfLines={2} style={{ width: 300 }}><Icon name='clock-o' style={{fontSize: 18}}/> {val.duration}m      <Icon name="bar-chart-o" style={{fontSize: 18}} /> {val.kcal}kcal</Text>
               </Body>
             </CardItem>
           </Card>

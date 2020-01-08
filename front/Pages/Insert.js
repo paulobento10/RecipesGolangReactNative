@@ -1,8 +1,13 @@
-import React, { useState, Component } from "react";
-import { Container, Content, Header, Field,Left, Body, Right, Title, Form, Item, Input, Label, Button, Text, AppRegistry, TouchableOpacity, Image, Animated, ScrollView, StyleSheet, View} from 'native-base';
+import React, { Component  } from "react";
+import { useState, useEffect } from 'react';
+import { Container, Content, Field,Left, Body, Right, Title, Form, Item, Input, Label, Button, Text, AppRegistry, TouchableOpacity, Image, Animated, ScrollView, StyleSheet, View} from 'native-base';
+import Header from '../Components/Insert/InsertHeader';
 import { Actions } from 'react-native-router-flux';
-import axios from 'axios';
+import {  ListItem } from 'native-base';
 import { CheckBox } from 'react-native-elements';
+import axios from 'axios';
+import { renderers } from "react-native-popup-menu";
+
 
 function InsertRecipe(props) {
   
@@ -14,7 +19,28 @@ function InsertRecipe(props) {
   const [category, setCategory] = useState("");
   const [kcal, setKcal] = useState("");
   const [user_id, setUser_id] = useState("");
-  
+  const [dataIngredients, setDataIngredients] = useState([]);
+
+  useEffect(() => {
+    //axios.get("http://192.168.1.68:8000/api/searchIngredientAll")
+    axios.get("http://192.168.1.119:8000/api/searchIngredientAll")
+    .then(resulti => {
+        if (resulti.status==200) { 
+            setDataIngredients([]);
+            for (let ingObject of resulti.data) {
+                var ing= ingObject.ingredient_name;
+                var ing_id= ingObject.ingredient_id;
+                setDataIngredients(dataIngredients =>[...dataIngredients, {id: ing_id,value: ing, checked: false}])
+            }
+            (oldArray => [...oldArray, newElement]);
+        } else {
+            setIsError(true);
+        }
+    }).catch(e => {
+        setIsError(true);
+    });
+  }, []);
+
   const post = () => {
     var recipe = {
       recipe_name: recipe_name.text,
@@ -27,7 +53,7 @@ function InsertRecipe(props) {
     }
     
     axios.post("http://192.168.1.68:8000/api/insertRecipe", recipe)
-    //axios.post("http://192.168.1.119:8000/api/insertUser", user)
+    //axios.post("http://192.168.1.119:8000/api/insertRecipe", recipe)
     .then(result => {  
       console.log(result.data);
       if (result.data==true) {
@@ -41,11 +67,20 @@ function InsertRecipe(props) {
     });
   }
 
-  const getIngredients = () =>{
+  const onCheckChanged = (id) => {
+    dataIngredients.forEach(element => {
+      if(element.id==id){
+        element.checked= (!element.checked)
+        console.log(element)
+      }
+    });
+  }
+
+  /*const getIngredients = () =>{
     var ingredients = {
-      /*Ingredient_id:,
+      Ingredient_id:,
       Ingredient_name:,
-      Kcal:,*/
+      Kcal:,
     }
     
     var checkBoxComponentList = [];
@@ -72,11 +107,7 @@ function InsertRecipe(props) {
     }).catch(e => {
       setIsError(true);
     });
-  }
-
-  const goToSignIn = () => {
-    Actions.signin();
-  }
+  }*/
 
   return (
     <Container >
@@ -108,15 +139,24 @@ function InsertRecipe(props) {
           <Item floatingLabel last>
             <Input placeholder="user_id" onChangeText={(text) => setUser_id({text})} />
           </Item>
-          <Button style= {{ margin: 10 }} block primary onPress={getIngredients}>
-            <Text>ingredients</Text>
-          </Button>
+          { 
+              dataIngredients.map(val =>
+                <Content padder>
+                  <CheckBox iconRight
+                    center
+                    iconRight
+                    checkedIcon='dot-circle-o'
+                    uncheckedIcon='circle-o'
+                    title={val.value} 
+                    checked={val.checked}
+                    onPress={() => onCheckChanged(val.id)}/>
+                </Content>
+              )
+          }
           <Button style= {{ margin: 10 }} block primary onPress={post}>
             <Text>Submit</Text>
           </Button>
         </Form>
-        <Text>{'Already have an account? '}<Text style={{color:'#E65100'}} onPress={goToSignIn}>{'Sign In'}</Text></Text>
-        { isError &&<Text>Something went wrong, please try again.</Text> }
       </Content>
     </Container>
   );
