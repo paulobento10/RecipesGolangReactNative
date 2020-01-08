@@ -1,14 +1,19 @@
 import React, { Component } from 'react';
 import { Container, Header, Body, Right, Icon, Button, Title, Text } from 'native-base';
+import { Actions } from 'react-native-router-flux';
 
-const ShowHeader: (props) => React$Node = () => { 
+function ShowHeader(props) {
+    const insertPress = () => {
+        Actions.insert({user_id: props.user_id});
+    }
+    
     return (
             <Header>
                 <Body>
                     <Title>Recipes</Title>
                 </Body>
                 <Right>
-                    <Icon name="ios-add" style={{fontSize: 40, color: 'white'}} /*redirecionar para Insert*//>
+                    <Icon name="ios-add" style={{fontSize: 40, color: 'white'}} onPress={insertPress} />
                 </Right>
             </Header>
     );

@@ -49,7 +49,7 @@ function InsertRecipe(props) {
       picture: picture.text,
       category: category.text,
       kcal: kcal.text,
-      user_id: parseInt(user_id.text)
+      user_id: props.user_id
     }
     
     axios.post("http://192.168.1.68:8000/api/insertRecipe", recipe)
@@ -111,7 +111,7 @@ function InsertRecipe(props) {
 
   return (
     <Container >
-      <Header>
+      <Header user_id={props.user_id}>
         <Body>
           <Title>Create Recipe</Title>
         </Body>
@@ -135,9 +135,6 @@ function InsertRecipe(props) {
           </Item>
           <Item floatingLabel>
             <Input placeholder="Kcal" onChangeText={(text) => setKcal({text})} />
-          </Item>
-          <Item floatingLabel last>
-            <Input placeholder="user_id" onChangeText={(text) => setUser_id({text})} />
           </Item>
           { 
               dataIngredients.map(val =>
