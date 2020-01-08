@@ -165,12 +165,12 @@ func deleteUser(id string) bool {
 /**
 * [Model][User] Returns a bool, it verifies if the email and password received from parameters are the same as the ones in the database
  */
-func checkUser(email string, pass string) bool {
+func checkUser(email string, pass string) int {
 	var u User
 	db := openConnDB()
 	err := db.Get(&u, "SELECT * FROM users WHERE email like "+"'"+email+"'")
 	if err != nil {
-		return false
+		return -1
 	}
 	// Comparing the password with the hash
 	//var aux string = u.Password
@@ -185,10 +185,10 @@ func checkUser(email string, pass string) bool {
 	log.Fatal(e)  // nil means it is a match*/
 	//if e != nil { //u.Password != pass {
 	if u.Password != pass {
-		return false
+		return -1
 	}
 	closeConnDB(db)
-	return true
+	return u.User_id
 }
 
 /**
