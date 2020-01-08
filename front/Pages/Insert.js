@@ -1,72 +1,8 @@
 import React, { useState, Component } from "react";
-import { Container, Content, Header, Field,Left, Body, Right, Title, Form, Item, Input, Label, Button, Text } from 'native-base';
+import { Container, Content, Header, Field,Left, Body, Right, Title, Form, Item, Input, Label, Button, Text, AppRegistry, TouchableOpacity, Image, Animated, ScrollView, StyleSheet, View} from 'native-base';
 import { Actions } from 'react-native-router-flux';
 import axios from 'axios';
-
-class MyClass extends Component {
-
-    constructor(props){
-      super(props);
-      this.state = {
-        textInput : [],
-        inputData : []
-      }
-    }
-  
-    //function to add TextInput dynamically
-    addTextInput = (index) => {
-      let textInput = this.state.textInput;
-      textInput.push(<TextInput style={styles.textInput}
-        onChangeText={(text) => this.addValues(text, index)} />);
-      this.setState({ textInput });
-    }
-  
-    //function to remove TextInput dynamically
-    removeTextInput = () => {
-      let textInput = this.state.textInput;
-      let inputData = this.state.inputData;
-      textInput.pop();
-      inputData.pop();
-      this.setState({ textInput,inputData });
-    }
-  
-    //function to add text from TextInputs into single array
-    addValues = (text, index) => {
-      let dataArray = this.state.inputData;
-      let checkBool = false;
-      if (dataArray.length !== 0){
-        dataArray.forEach(element => {
-          if (element.index === index ){
-            element.text = text;
-            checkBool = true;
-          }
-        });
-      }
-      if (checkBool){
-      this.setState({
-        inputData: dataArray
-      });
-    }
-    else {
-      dataArray.push({'text':text,'index':index});
-      this.setState({
-        inputData: dataArray
-      });
-    }
-    }
-  
-    //function to console the output
-    getValues = () => {
-      console.log('Data',this.state.inputData);
-    }
-  
-  
-    /*render(){
-      return(
-        
-      )
-    }*/
-  }
+import { CheckBox } from 'react-native-elements';
 
 function InsertRecipe(props) {
   
@@ -96,6 +32,39 @@ function InsertRecipe(props) {
       console.log(result.data);
       if (result.data==true) {
         Actions.signin();
+      } else {
+        console.log(result.data);
+        setIsError(true);
+      }
+    }).catch(e => {
+      setIsError(true);
+    });
+  }
+
+  const getIngredients = () =>{
+    var ingredients = {
+      /*Ingredient_id:,
+      Ingredient_name:,
+      Kcal:,*/
+    }
+    
+    var checkBoxComponentList = [];
+    var ingredients_aux;
+
+    axios.get("http://192.168.1.68:8000/api/searchIngredientAll", ingredients)
+    //axios.post("http://192.168.1.119:8000/api/insertUser", user)
+    .then(result => {  
+      console.log(result.data);
+      if (result.data==true) {
+        //Actions.signin();
+        ingredients_aux = result.data;
+        for(let i=0; i<result.data.length; i++){
+            checkBoxComponentList.push(<CheckBoxComponent 
+                title={sellablePartsCategory[i]}
+                checked= {true} />);
+        }
+        return checkBoxComponentList;
+
       } else {
         console.log(result.data);
         setIsError(true);
@@ -136,12 +105,12 @@ function InsertRecipe(props) {
           <Item floatingLabel>
             <Input placeholder="Kcal" onChangeText={(text) => setKcal({text})} />
           </Item>
-          <Item floatingLabel>
-          <Button title='Add' onPress={() => MyClass.addTextInput(MyClass.state.textInput.length)} />
-          </Item>
           <Item floatingLabel last>
             <Input placeholder="user_id" onChangeText={(text) => setUser_id({text})} />
           </Item>
+          <Button style= {{ margin: 10 }} block primary onPress={getIngredients}>
+            <Text>ingredients</Text>
+          </Button>
           <Button style= {{ margin: 10 }} block primary onPress={post}>
             <Text>Submit</Text>
           </Button>
