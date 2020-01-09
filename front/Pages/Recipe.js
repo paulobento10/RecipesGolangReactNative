@@ -58,13 +58,13 @@ function Recipe(props) {
             <Text style={{fontSize: 20}}>{recipe.category}{"\n"}</Text>
             <Text style={{color: '#787878'}}>{recipe.recipe_description}{"\n"}</Text>
             <Text numberOfLines={2} style={{ textAlign: 'center', width: 300 }}><Icon name='clock-o' style={{fontSize: 18}}/> {recipe.duration}m    |     <Icon name="bar-chart-o" style={{fontSize: 18}}/> {recipe.kcal}kcal{"\n"}</Text>
-            {ingredients.length > 0 && <Text style={{textAlign: 'left', fontWeight: 'bold', fontSize: 20,}}>Ingredients:</Text> }
+            {ingredients.length > 0 && <Text style={{textAlign: 'left', fontWeight: 'bold', fontSize: 20}}>Ingredients:</Text> }
             {ingredients && ingredients.length > 0 && ingredients.map(val => (
                 <Text><Icon name="circle" style={{fontSize: 9}}/> {val.ingredient_name}</Text>
             ))}
             <AirbnbRating
             count={5}
-            reviews={["Terrible", "OK", "Good", "Very Good", "Amazing"]}
+            reviews={["Terrible", "Fair", "Good", "Very Good", "Amazing"]}
             defaultRating={4}
             size={20}
             />
