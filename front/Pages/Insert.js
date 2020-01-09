@@ -5,6 +5,8 @@ import Header from '../Components/Insert/InsertHeader';
 import { Actions } from 'react-native-router-flux';
 import {  ListItem } from 'native-base';
 import { CheckBox } from 'react-native-elements';
+import { Col, Row, Grid } from 'react-native-easy-grid';
+import { Dropdown } from 'react-native-material-dropdown';
 import axios from 'axios';
 import { renderers } from "react-native-popup-menu";
 
@@ -20,7 +22,17 @@ function InsertRecipe(props) {
   const [kcal, setKcal] = useState(0);
   const [user_id, setUser_id] = useState("");
   const [dataIngredients, setDataIngredients] = useState([]);
-  
+  const [dataType, setDataType] = useState([{
+    value: 'Breakfast & Brunch',
+  }, {
+    value: 'Lunch & Dinner',
+  }, {
+    value: 'Desert',
+  }, {
+    value: 'Appetizers & Snacks',
+  },{
+    value: 'Drinks',
+  },]);
 
   useEffect(() => {
     //axios.get("http://192.168.1.68:8000/api/searchIngredientAll")
@@ -49,7 +61,7 @@ function InsertRecipe(props) {
       recipe_description: recipe_description.text,
       duration: duration.text,
       picture: picture.text,
-      category: category.text,
+      category: category.value,
       kcal: kcal.text,
       user_id: props.user_id
     }
@@ -87,6 +99,8 @@ function InsertRecipe(props) {
                 }
                 
               });
+              console.log("USER: "+props.user_id);
+              Actions.show({user_id: props.user_id});
           } else {
               setIsError(true);
           }
@@ -99,6 +113,14 @@ function InsertRecipe(props) {
     }).catch(e => {
       setIsError(true);
     });
+  }
+
+  const menuPress = () => {
+    if(searchByMeal==false){
+        setSearchByMeal(true)
+    } else {
+        setSearchByMeal(false)
+    }
   }
 
   const onCheckChanged = (id) => {
@@ -171,9 +193,17 @@ function InsertRecipe(props) {
           <Item floatingLabel>
             <Input placeholder="Picture" onChangeText={(text) => setPicture({text})} />
           </Item>
-          <Item floatingLabel>
-            <Input placeholder="Category" onChangeText={(text) => setCategory({text})} />
-          </Item>
+          <Grid>
+            <Row style={{alignSelf: 'center'}}> 
+                <Col style={{ width: 250 }}>
+                    <Dropdown
+                        label='Search by type of meal'
+                        data={dataType}
+                        onChangeText={(value) => setCategory({value})}
+                    />
+                </Col>
+            </Row>
+          </Grid>
           { 
               dataIngredients.map(val =>
                 <Content padder>
