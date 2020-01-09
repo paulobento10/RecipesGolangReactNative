@@ -22,8 +22,8 @@ function InsertRecipe(props) {
   const [dataIngredients, setDataIngredients] = useState([]);
 
   useEffect(() => {
-    //axios.get("http://192.168.1.68:8000/api/searchIngredientAll")
-    axios.get("http://192.168.1.119:8000/api/searchIngredientAll")
+    axios.get("http://192.168.1.68:8000/api/searchIngredientAll")
+    //axios.get("http://192.168.1.119:8000/api/searchIngredientAll")
     .then(resulti => {
         if (resulti.status==200) { 
             setDataIngredients([]);
@@ -57,7 +57,30 @@ function InsertRecipe(props) {
     .then(result => {  
       console.log(result.data);
       if (result.data==true) {
-        Actions.signin();
+
+        for (let index = 0; index < dataIngredients.length; index++) {
+          const element = {
+            ingredient_id: dataIngredients[index],
+            recipe_id: 15
+          }
+          axios.post("http://192.168.1.68:8000/api/insertRecipeIngredients", element)
+          //axios.post("http://192.168.1.119:8000/api/insertRecipe", recipe)
+          .then(result => {  
+            console.log(result.data);
+            if (result.data==true) {
+              console.log('Success inserting ingredients');
+              Actions.signin();
+            } else {
+              console.log('Unsuccess inserting ingredients');
+              console.log(result.data);
+              setIsError(true);
+            }
+          }).catch(e => {
+            setIsError(true);
+          });
+        }
+
+        //Actions.signin();
       } else {
         console.log(result.data);
         setIsError(true);

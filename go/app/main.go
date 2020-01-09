@@ -257,16 +257,16 @@ func getRecipeAllNoJson() []Recipes {
 /**
 * [Model][Recipes] Receives a recipe as parameter and inserts it in the database
  */
-func insertRecipe(r Recipes) int {
+func insertRecipe(r Recipes) bool {
 	db := openConnDB()
 	tx := db.MustBegin()
 	tx.NamedExec("INSERT INTO recipes (recipe_name, recipe_description, duration, picture, category, kcal, user_id) VALUES (:recipe_name, :recipe_description, :duration, :picture, :category, :kcal, :user_id)", &r)
 	err := tx.Commit()
 	if err != nil {
-		return -1
+		return false
 	}
 	closeConnDB(db)
-	return r.Recipe_id
+	return true
 }
 
 /**
@@ -578,6 +578,7 @@ func getIngredientByName(ingredient_name string) []byte {
 func getIngredientsByRecipeId(recipe_id string) []byte {
 	row := []Ingredients{}
 	db := openConnDB()
+	recipe_id = "'" + recipe_id + "'"
 	query := "SELECT * FROM ingredients WHERE ingredient_id IN(SELECT ingredient_id FROM recipeingredients WHERE recipe_id = " + recipe_id + ")"
 	err := db.Select(&row, query)
 	if err != nil {
