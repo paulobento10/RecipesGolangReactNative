@@ -368,6 +368,24 @@ func getRecipeByName(recipe_name string) []byte {
 /**
 * [Model][Recipes] Queries the database to get a recipe by its recipe_name
  */
+func getRecipeByExactName(recipe_name string) []byte {
+	row := []Recipes{}
+	db := openConnDB()
+	recipe_name = "'"+recipe_name+"'"
+	querry := "SELECT recipe_id FROM recipes WHERE recipe_name = "+recipe_name
+	err := db.Select(&row, querry)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	j, _ := json.Marshal(row)
+	closeConnDB(db)
+	return j
+}
+
+/**
+* [Model][Recipes] Queries the database to get a recipe by its recipe_name
+ */
 func getRecipeByCategory(category string) []byte {
 	row := []Recipes{}
 	db := openConnDB()
@@ -988,6 +1006,17 @@ func getRecipeByNameRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 /**
+* [Controller][Recipes] function to get a recipe by recipe_name
+ */
+func getRecipeByExactNameRoute(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	rows := getRecipeByExactName(vars["name"])
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(rows)
+}
+
+/**
 * [Controller][Recipes] function to get a recipe by category
  */
 func getRecipeByCategoryRoute(w http.ResponseWriter, r *http.Request) {
@@ -1267,6 +1296,7 @@ func main() {
 	r.HandleFunc("/api/editRecipeName", editRecipeNameRoute).Methods("POST")
 	r.HandleFunc("/api/searchUserRecipe/id/{id}", getRecipeByUserIdRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeName/name/{name}", getRecipeByNameRoute).Methods("GET")
+	r.HandleFunc("/api/searchRecipeExactName/name/{name}", getRecipeByExactNameRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeCategory/category/{category}", getRecipeByCategoryRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeAll", getRecipeAllRoute).Methods("GET")
 	r.HandleFunc("/api/searchRecipeByIngredients", getRecipeByIngredientsRoute).Methods("GET")
