@@ -11,7 +11,7 @@ import { renderers } from "react-native-popup-menu";
 function InsertRecipe(props) {
   
   const [isError, setIsError] = useState(false);
-  const [auxRecipes, setAuxRecipes] = useState([]);
+  const [auxRecipes, setAuxRecipes] = useState();
   const [recipe_name, setRecipe_name] = useState("");
   const [recipe_description, setRecipe_description] = useState("");
   const [duration, setDuration] = useState("");
@@ -56,51 +56,47 @@ function InsertRecipe(props) {
     //axios.post("http://192.168.1.68:8000/api/insertRecipe", recipe)
     axios.post("http://192.168.1.119:8000/api/insertRecipe", recipe)
     .then(result => {
+      console.log("Inicio")
       if (result.data==true) {
-        //axios.get("http://192.168.1.68:8000/api/searchRecipeName/name/" + recipe_name)
-        axios.get("http://192.168.1.119:8000/api/searchRecipeName/name/" + recipe_name.text)
+        //axios.get("http://192.168.1.68:8000/api/searchRecipeExactName/name/" + recipe_name)
+        axios.get("http://192.168.1.119:8000/api/searchRecipeExactName/name/" + recipe_name.text)
         .then(resulti => {
           if (resulti.status==200) { 
-              setAuxRecipes(resulti.data);
-              var auxlenght=auxRecipes.length-1
-              if(auxlenght<0){
-                auxlenght=0;
-              }
-              console.log(auxRecipes)
-              console.log(auxlenght)
+              setAuxRecipes(resulti.data[0].recipe_id);
+              console.log("i ");
+              console.log("THEN "+auxRecipes)
 
-              for (let index = 0; index < dataIngredients.length; index++) {
-                const element = {
-                  ingredient_id: dataIngredients[index].id,
-                  recipe_id: auxRecipes[auxlenght].recipe_id
-                }
-                //axios.post("http://192.168.1.68:8000/api/insertRecipeIngredients" element)
-                axios.post("http://192.168.1.119:8000/api/insertRecipeIngredients", element)
-                .then(result => {  
-                  //console.log(result.data);
-                  if (result.data==true) {
-                    console.log('Success inserting ingredients');
-                  } else {
-                    console.log('Unsuccess inserting ingredients');
-                    //console.log(result.data);
-                    setIsError(true);
+              dataIngredients.forEach(element => {
+                if(element.checked==true){
+                  const elementIng = {
+                    ingredient_id: element.id,
+                    recipe_id: resulti.data[0].recipe_id,
                   }
-                }).catch(e => {
-                  setIsError(true);
-                });
-              }
+                  //axios.post("http://192.168.1.68:8000/api/insertRecipeIngredients" elementIng)
+                  axios.post("http://192.168.1.119:8000/api/insertRecipeIngredients", elementIng)
+                  .then(resultj => {  
+                    console.log("j "+resultj.data);
+                    if (resultj.data==true) {
+                      console.log('Success inserting ingredients');
+                    } else {
+                      console.log('Unsuccess inserting ingredients');
+                      //console.log(result.data);
+                      setIsError(true);
+                    }
+                  }).catch(e => {
+                    setIsError(true);
+                  });
 
+                }
+                
+              });
           } else {
               setIsError(true);
           }
         }).catch(e => {
             setIsError(true);
         });
-        
-
-
       } else {
-        console.log(result.data);
         setIsError(true);
       }
     }).catch(e => {
@@ -196,7 +192,7 @@ function InsertRecipe(props) {
               )
           }
           <Button style= {{ margin: 10 }} block primary onPress={post}>
-            <Text>Submit</Text>
+            <Text onPress={post}>Submit</Text>
           </Button>
         </Form>
       </Content>
