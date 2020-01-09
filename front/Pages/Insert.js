@@ -8,29 +8,30 @@ import { CheckBox } from 'react-native-elements';
 import axios from 'axios';
 import { renderers } from "react-native-popup-menu";
 
-
 function InsertRecipe(props) {
   
   const [isError, setIsError] = useState(false);
+  const [auxRecipes, setAuxRecipes] = useState([]);
   const [recipe_name, setRecipe_name] = useState("");
   const [recipe_description, setRecipe_description] = useState("");
   const [duration, setDuration] = useState("");
   const [picture, setPicture] = useState("");
   const [category, setCategory] = useState("");
-  const [kcal, setKcal] = useState("");
+  const [kcal, setKcal] = useState(0);
   const [user_id, setUser_id] = useState("");
   const [dataIngredients, setDataIngredients] = useState([]);
 
   useEffect(() => {
-    axios.get("http://192.168.1.68:8000/api/searchIngredientAll")
-    //axios.get("http://192.168.1.119:8000/api/searchIngredientAll")
+    //axios.get("http://192.168.1.68:8000/api/searchIngredientAll")
+    axios.get("http://192.168.1.119:8000/api/searchIngredientAll")
     .then(resulti => {
         if (resulti.status==200) { 
             setDataIngredients([]);
             for (let ingObject of resulti.data) {
                 var ing= ingObject.ingredient_name;
                 var ing_id= ingObject.ingredient_id;
-                setDataIngredients(dataIngredients =>[...dataIngredients, {id: ing_id,value: ing, checked: false}])
+                var ing_kcal= ingObject.kcal;
+                setDataIngredients(dataIngredients =>[...dataIngredients, {id: ing_id, value: ing, checked: false, kcal: ing_kcal}])
             }
             (oldArray => [...oldArray, newElement]);
         } else {
@@ -52,35 +53,52 @@ function InsertRecipe(props) {
       user_id: props.user_id
     }
     
-    axios.post("http://192.168.1.68:8000/api/insertRecipe", recipe)
-    //axios.post("http://192.168.1.119:8000/api/insertRecipe", recipe)
-    .then(result => {  
-      console.log(result.data);
+    //axios.post("http://192.168.1.68:8000/api/insertRecipe", recipe)
+    axios.post("http://192.168.1.119:8000/api/insertRecipe", recipe)
+    .then(result => {
       if (result.data==true) {
+        //axios.get("http://192.168.1.68:8000/api/searchRecipeName/name/" + recipe_name)
+        axios.get("http://192.168.1.119:8000/api/searchRecipeName/name/" + recipe_name.text)
+        .then(resulti => {
+          if (resulti.status==200) { 
+              setAuxRecipes(resulti.data);
+              var auxlenght=auxRecipes.length-1
+              if(auxlenght<0){
+                auxlenght=0;
+              }
+              console.log(auxRecipes)
+              console.log(auxlenght)
 
-        for (let index = 0; index < dataIngredients.length; index++) {
-          const element = {
-            ingredient_id: dataIngredients[index],
-            recipe_id: 15
-          }
-          axios.post("http://192.168.1.68:8000/api/insertRecipeIngredients", element)
-          //axios.post("http://192.168.1.119:8000/api/insertRecipe", recipe)
-          .then(result => {  
-            console.log(result.data);
-            if (result.data==true) {
-              console.log('Success inserting ingredients');
-              Actions.signin();
-            } else {
-              console.log('Unsuccess inserting ingredients');
-              console.log(result.data);
+              for (let index = 0; index < dataIngredients.length; index++) {
+                const element = {
+                  ingredient_id: dataIngredients[index].id,
+                  recipe_id: auxRecipes[auxlenght].recipe_id
+                }
+                //axios.post("http://192.168.1.68:8000/api/insertRecipeIngredients" element)
+                axios.post("http://192.168.1.119:8000/api/insertRecipeIngredients", element)
+                .then(result => {  
+                  //console.log(result.data);
+                  if (result.data==true) {
+                    console.log('Success inserting ingredients');
+                  } else {
+                    console.log('Unsuccess inserting ingredients');
+                    //console.log(result.data);
+                    setIsError(true);
+                  }
+                }).catch(e => {
+                  setIsError(true);
+                });
+              }
+
+          } else {
               setIsError(true);
-            }
-          }).catch(e => {
+          }
+        }).catch(e => {
             setIsError(true);
-          });
-        }
+        });
+        
 
-        //Actions.signin();
+
       } else {
         console.log(result.data);
         setIsError(true);
@@ -94,7 +112,14 @@ function InsertRecipe(props) {
     dataIngredients.forEach(element => {
       if(element.id==id){
         element.checked= (!element.checked)
-        console.log(element)
+        if(element.checked==true){
+          var auxKcal= parseInt(kcal)+parseInt(element.kcal)
+          setKcal(auxKcal);
+        }
+        else if(element.checked==false){
+          var auxKcal= parseInt(kcal)-parseInt(element.kcal)
+          setKcal(auxKcal);
+        }
       }
     });
   }
@@ -155,9 +180,6 @@ function InsertRecipe(props) {
           </Item>
           <Item floatingLabel>
             <Input placeholder="Category" onChangeText={(text) => setCategory({text})} />
-          </Item>
-          <Item floatingLabel>
-            <Input placeholder="Kcal" onChangeText={(text) => setKcal({text})} />
           </Item>
           { 
               dataIngredients.map(val =>
