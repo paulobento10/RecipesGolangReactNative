@@ -372,7 +372,7 @@ func getRecipeByExactName(recipe_name string) []byte {
 	row := []Recipes{}
 	db := openConnDB()
 	recipe_name = "'"+recipe_name+"'"
-	querry := "SELECT recipe_id FROM recipes WHERE recipe_name = "+recipe_name
+	querry := "SELECT recipe_id FROM recipes WHERE recipe_name = "+recipe_name +" ORDER BY recipe_id DESC"
 	err := db.Select(&row, querry)
 	if err != nil {
 		log.Fatal(err)
