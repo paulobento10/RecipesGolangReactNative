@@ -31,17 +31,9 @@ function ShowSearch(props) {
       
 
     useEffect(() => {
-        //axios.get("http://192.168.1.68:8000/api/searchRecipeAll")
-        axios.get("http://192.168.1.119:8000/api/searchRecipeAll")
-        .then(result => {
-            if (result.status==200) { 
-                setRecipes(result.data);
-            } else {
-                setIsError(true);
-            }
-        }).catch(e => {
-            setIsError(true);
-        });
+
+        getAll();
+
         //axios.get("http://192.168.1.68:8000/api/searchIngredientAll")
         axios.get("http://192.168.1.119:8000/api/searchIngredientAll")
         .then(resulti => {
@@ -51,7 +43,6 @@ function ShowSearch(props) {
                     var ing= ingObject.ingredient_name;
                     setDataIngredients(dataIngredients =>[...dataIngredients, {value: ing}])
                 }
-                (oldArray => [...oldArray, newElement]);
             } else {
                 setIsError(true);
             }
@@ -64,6 +55,7 @@ function ShowSearch(props) {
         //axios.get("http://192.168.1.68:8000/api/searchRecipeName/name/"+search.text)
         axios.get("http://192.168.1.119:8000/api/searchRecipeName/name/"+search.text)
         .then(result => {
+            console.log(result)
             if (result.status==200) { 
                 setRecipes(result.data);
             } else {
@@ -74,6 +66,21 @@ function ShowSearch(props) {
         });
     };
 
+    const getAll = () => {
+        //axios.get("http://192.168.1.68:8000/api/searchRecipeAll")
+        axios.get("http://192.168.1.119:8000/api/searchRecipeAll")
+        .then(result => {
+            if (result.status==200) { 
+                setRecipes(result.data);
+                setSearchByMeal(false)
+            } else {
+                setIsError(true);
+            }
+        }).catch(e => {
+            setIsError(true);
+        });
+    }
+
     const mealGet = () => {
         //axios.get("http://192.168.1.68:8000/api/searchRecipeCategory/category/"+meal.value)
         axios.get("http://192.168.1.119:8000/api/searchRecipeCategory/category/"+meal.value)
@@ -81,6 +88,7 @@ function ShowSearch(props) {
             console.log(result.data);
             if (result.status==200) { 
                 setRecipes(result.data);
+                setSearchByMeal(false)
             } else {
                 setIsError(true);
             }
@@ -96,6 +104,7 @@ function ShowSearch(props) {
             console.log(result.data);
             if (result.status==200) { 
                 setRecipes(result.data);
+                setSearchByMeal(false)
             } else {
                 setIsError(true);
             }
@@ -148,6 +157,11 @@ function ShowSearch(props) {
                             <Text>Search</Text>
                         </Button>
                         </Col>
+                    </Row>
+                    <Row style={{alignSelf: 'center'}}> 
+                    <   Button transparent onPress={getAll}>
+                            <Text>Get All</Text>
+                        </Button>
                     </Row>
                 </Grid>
             }
