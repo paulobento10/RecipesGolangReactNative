@@ -56,7 +56,7 @@ function Recipe(props) {
             </View>
             <Text h1 style={{fontSize: 30, fontWeight: 'bold'}}>{recipe.recipe_name}</Text>
             <Text style={{fontSize: 20}}>{recipe.category}{"\n"}</Text>
-            <Text style={{color: '#787878'}}>{recipe.recipe_description}</Text>
+            <Text style={{color: '#787878'}}>{recipe.recipe_description}{"\n"}</Text>
             <Text numberOfLines={2} style={{ textAlign: 'center', width: 300 }}><Icon name='clock-o' style={{fontSize: 18}}/> {recipe.duration}m    |     <Icon name="bar-chart-o" style={{fontSize: 18}}/> {recipe.kcal}kcal{"\n"}</Text>
             {ingredients.length > 0 && <Text style={{textAlign: 'left', fontWeight: 'bold', fontSize: 20,}}>Ingredients:</Text> }
             {ingredients && ingredients.length > 0 && ingredients.map(val => (
