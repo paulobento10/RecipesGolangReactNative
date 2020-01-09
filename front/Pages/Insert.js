@@ -20,6 +20,7 @@ function InsertRecipe(props) {
   const [kcal, setKcal] = useState(0);
   const [user_id, setUser_id] = useState("");
   const [dataIngredients, setDataIngredients] = useState([]);
+  
 
   useEffect(() => {
     //axios.get("http://192.168.1.68:8000/api/searchIngredientAll")
@@ -56,15 +57,12 @@ function InsertRecipe(props) {
     //axios.post("http://192.168.1.68:8000/api/insertRecipe", recipe)
     axios.post("http://192.168.1.119:8000/api/insertRecipe", recipe)
     .then(result => {
-      console.log("Inicio")
       if (result.data==true) {
         //axios.get("http://192.168.1.68:8000/api/searchRecipeExactName/name/" + recipe_name)
         axios.get("http://192.168.1.119:8000/api/searchRecipeExactName/name/" + recipe_name.text)
         .then(resulti => {
           if (resulti.status==200) { 
               setAuxRecipes(resulti.data[0].recipe_id);
-              console.log("i ");
-              console.log("THEN "+auxRecipes)
 
               dataIngredients.forEach(element => {
                 if(element.checked==true){
@@ -75,7 +73,6 @@ function InsertRecipe(props) {
                   //axios.post("http://192.168.1.68:8000/api/insertRecipeIngredients" elementIng)
                   axios.post("http://192.168.1.119:8000/api/insertRecipeIngredients", elementIng)
                   .then(resultj => {  
-                    console.log("j "+resultj.data);
                     if (resultj.data==true) {
                       console.log('Success inserting ingredients');
                     } else {
