@@ -24,12 +24,12 @@ function UserCreations(props) {
     }).catch(e => {
         setIsError(true);
     });
-
   }, []);
 
   return (
     <Content padder>
           <Text style={{fontWeight: 'bold', fontSize: 20}}>Creations of user Nrº {props.user_id} (Undone){"\n\n"}</Text>
+          <Text style={{fontWeight: 'bold'}}>Recipes:</Text>
           {recipes && recipes.length > 0 && recipes.map(val => (
               <Text>{val.recipe_name}</Text>
           ))}
