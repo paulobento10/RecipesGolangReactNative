@@ -38,6 +38,7 @@ type Ingredients struct {
 	Ingredient_id   int    `json:"ingredient_id"`
 	Ingredient_name string `json:"ingredient_name"`
 	Kcal            string `json:"kcal"`
+	User_id         int    `json:"user_id"`
 }
 
 type Directions struct {
@@ -371,8 +372,8 @@ func getRecipeByName(recipe_name string) []byte {
 func getRecipeByExactName(recipe_name string) []byte {
 	row := []Recipes{}
 	db := openConnDB()
-	recipe_name = "'"+recipe_name+"'"
-	querry := "SELECT recipe_id FROM recipes WHERE recipe_name = "+recipe_name +" ORDER BY recipe_id DESC"
+	recipe_name = "'" + recipe_name + "'"
+	querry := "SELECT recipe_id FROM recipes WHERE recipe_name = " + recipe_name + " ORDER BY recipe_id DESC"
 	err := db.Select(&row, querry)
 	if err != nil {
 		log.Fatal(err)
@@ -494,7 +495,7 @@ func editIngredient(i Ingredients) bool {
 
 	db := openConnDB()
 	tx := db.MustBegin()
-	tx.NamedExec("UPDATE ingredients SET ingredient_name=:ingredient_name, kcal=:kcal WHERE ingredient_id=:ingredient_id", &i)
+	tx.NamedExec("UPDATE ingredients SET ingredient_name=:ingredient_name, kcal=:kcal, user_id=:user_id WHERE ingredient_id=:ingredient_id", &i)
 	//err := tx.Commit()
 
 	//As an ingredient gets its kcal updated, so does the recipes it belongs to should
